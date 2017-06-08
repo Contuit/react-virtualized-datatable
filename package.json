@@ -14,9 +14,11 @@
     "bootstrap": "3.3.7",
     "classnames": "^2.2.5",
     "font-awesome": "4.7.0",
+    "moment": "^2.18.1",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
-    "react-virtualized": "^9.7.6"
+    "react-virtualized": "^9.7.6",
+    "underscore": "^1.8.3"
   },
   "scripts": {
     "start": "react-scripts start",

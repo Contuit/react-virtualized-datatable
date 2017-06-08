@@ -1,18 +1,76 @@
+import _ from 'underscore';
+import moment from 'moment';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import {
   AutoSizer,
   MultiGrid,
-  // CellMeasurer,
+  CellMeasurer,
   SortDirection,
-  // CellMeasurerCache,
+  CellMeasurerCache,
 } from 'react-virtualized';
 import './App.css';
 
 class DataGrid extends Component {
+  static _formatDateWithString(date, string) {
+    const toParse = isNaN(date) ? date : Number(date);
+    let tryFormat;
+    if (typeof toParse === 'number') {
+      tryFormat = moment.unix(toParse).format(string);
+    } else {
+      tryFormat = moment(toParse).format(string);
+    }
+
+    if (tryFormat === 'Invalid date') {
+      return date;
+    }
+
+    return tryFormat;
+  }
+
+  static formatData(uiState, column, data) {
+    if (_.isFunction(column.formatter)) {
+      return column.formatter(data);
+    }
+
+    let myData = null;
+    if (column.key.indexOf('.') > -1) {
+      const split = column.key.split('.');
+      if (split.length < 2) {
+        return;
+      }
+
+      myData = data[split[0]][split[1]];
+    } else {
+      myData = data[column.key];
+    }
+
+
+    switch (column.type) {
+      case 'date':
+        return DataGrid._formatDateWithString(myData, 'M/D/YYYY');
+      case 'dateTime':
+        return DataGrid._formatDateWithString(myData, 'M/D/YYYY HH:mm');
+      case 'array':
+        return (
+          <ul>
+            { myData.map(item => (<li key={item}>{item}</li>)) }
+          </ul>
+        );
+      default:
+        return myData;
+    }
+  }
+
   constructor(props) {
     super(props);
+
+    this.cellSizeCache = new CellMeasurerCache({
+      fixedWidth: true,
+      defaultHeight: 45,
+      // minHeight: browser.lessThan.small ? 40 : 50,
+    });
 
     this.state = {
       focusCol: null,
@@ -26,8 +84,100 @@ class DataGrid extends Component {
       filterOpened: false,
     };
 
+    // stores the inputs
+    this.filters = {};
+
     this.renderMultiGrid = this.renderMultiGrid.bind(this);
     this.onGridScroll = this.onGridScroll.bind(this);
+    this.renderCell = this.renderCell.bind(this);
+    this.getColumnWidth = this.getColumnWidth.bind(this);
+    this.getRowHeight = this.getRowHeight.bind(this);
+    this.onFilterChanged = this.onFilterChanged.bind(this);
+  }
+
+  componentDidMount() {
+    const { tableName, defaultSort } = this.props;
+    this.componentDidUpdate();
+    if (!this.mainGrid) {
+      this.props.setTableNewData(tableName, true);
+      return;
+    }
+
+    if (defaultSort) {
+      if (_.isString(defaultSort.sortDirection) &&
+          defaultSort.sortDirection.toLowerCase() === 'asc') {
+        defaultSort.sortDirection = SortDirection.ASC;
+      } else if (_.isString(defaultSort.sortDirection) &&
+          defaultSort.sortDirection.toLowerCase() === 'desc') {
+        defaultSort.sortDirection = SortDirection.DESC;
+      }
+
+      this.sort(defaultSort);
+    }
+
+    setTimeout(() => {
+      if (!this.mainGrid) { return; }
+      // this.cellSizeCache.clearAll();
+      this.mainGrid.measureAllCells();
+      setTimeout(() => {
+        if (!this.mainGrid) { return; }
+        this.mainGrid.recomputeGridSize();
+      }, 1);
+    }, 1);
+  }
+
+  componentWillReceiveProps() {
+    if (!this.mainGrid || !this.mainGrid._bottomRightGrid) {
+      return;
+    }
+
+    const containerWidth = this.mainGrid._containerBottomStyle.width;
+    const contentWidth = this.mainGrid._leftGridWidth +
+      this.mainGrid._bottomRightGrid._scrollingContainer.scrollWidth;
+
+    if (containerWidth === contentWidth) {
+      this.setState({ scrolledAllLeft: true, scrolledAllRight: true });
+    }
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    if (this.state.focusCol && this.state.focusCol === nextState.focusCol) {
+      this.setState({ focusCol: null });
+    }
+  }
+
+  componentDidUpdate() {
+    if (!this.mainGrid) {
+      return;
+    }
+
+    if (this.state.focusCol !== null) {
+      setTimeout(() => {
+        if (!this.filters[this.state.focusCol]) {
+          return;
+        }
+
+        this.filters[this.state.focusCol].focus();
+      }, 200);
+    }
+  }
+
+  onFilterClicked(colKey) {
+    this.setState({
+      filterOpened: !this.state.filterOpened,
+      focusCol: this.state.filterOpened ? null : colKey,
+    });
+    // prevent bubbling to the header
+    return false;
+  }
+
+  onFilterChanged(filterObj) {
+    const nextState = Object.assign({}, this.state);
+
+    nextState.filters[filterObj.key] = filterObj;
+    this.setState(nextState, () => {
+      this.mainGrid.forceUpdate();
+    });
   }
 
   getColumnCount() {
@@ -44,6 +194,14 @@ class DataGrid extends Component {
    */
   getColumns() {
     return this.props.columns;
+  }
+
+  getColumn(index) {
+    // adds defaults to the column
+    return _.defaults(this.getColumns()[index], {
+      sortable: true,
+      filterable: true,
+    });
   }
 
   /**
@@ -71,6 +229,32 @@ class DataGrid extends Component {
     const dataSet = [colNames, ...sorted];
 
     return index < 0 ? dataSet : dataSet[index];
+  }
+
+  // For now, sizing columns based on the type
+  getColumnWidth(index) {
+    const { columns, columnWidthMultiplier } = this.props;
+    const { type, width } = columns[index.index];
+
+    if (typeof width === 'number') {
+      return width;
+    }
+
+    switch (type) {
+      case 'text':
+      case 'list':
+        return columnWidthMultiplier * 300;
+      case 'date':
+        return columnWidthMultiplier * 150;
+      case 'checkbox':
+        return columnWidthMultiplier * 150;
+      default:
+        return columnWidthMultiplier * 200;
+    }
+  }
+
+  getRowHeight(index) {
+    return this.cellSizeCache.rowHeight(index);
   }
 
   _filterRows(items) {
@@ -175,7 +359,7 @@ class DataGrid extends Component {
     return (
       <div className="grid-container">
         <MultiGrid
-          cellRenderer={this.cellRenderer}
+          cellRenderer={this.renderCell}
           columnCount={this.getColumnCount()}
           columnWidth={this.getColumnWidth}
           fixedColumnCount={this.getColumnCount() < 2 ? 0 : 1}
@@ -204,7 +388,132 @@ class DataGrid extends Component {
     );
   }
 
+  renderCell({ columnIndex, rowIndex, style, parent }) {
+    const { ui, onRowClicked } = this.props;
+    const data = this.getRows(rowIndex);
+    const column = this.getColumn(columnIndex);
+    const { sortBy, sortDirection } = this.state;
+    const filter = this.state.filters[column.key];
+    console.log(filter);
+
+    return (
+      <CellMeasurer
+        cache={this.cellSizeCache}
+        columnIndex={columnIndex}
+        key={`${columnIndex},${rowIndex}`}
+        parent={parent}
+        rowIndex={rowIndex}
+        ref={(cellMeasurer) => {
+          this.cellMeasurer = cellMeasurer;
+        }}
+      >
+        <div
+          style={{
+            ...style,
+            maxWidth: 1000,
+            width: this.getColumnWidth({ index: columnIndex }),
+          }}
+          className={classNames({
+            'grid-header-cell': rowIndex === 0,
+            'grid-header-filterable': column.filterable,
+            'grid-cell': rowIndex > 0,
+            'grid-row-even': rowIndex % 2 === 0,
+            'first-col': columnIndex === 0,
+            'last-col': columnIndex === this.getColumnCount(),
+            'grid-cell-filter': rowIndex === 0 && this.state.filterOpened,
+            'grid-cell-sort': rowIndex === 0 && sortBy === column.key,
+            'grid-row-hovered': rowIndex === this.state.hoveredRowIndex,
+            'grid-column-hovered': columnIndex === this.state.hoveredColumnIndex,
+          })}
+          onMouseOver={() => {
+            this.setState({
+              hoveredColumnIndex: columnIndex,
+              hoveredRowIndex: rowIndex,
+            });
+
+            if (this.grid) {
+              this.grid.forceUpdate();
+            }
+          }}
+          onClick={() => {
+            if (rowIndex === 0 && sortBy === column.key && column.sortable) {
+              this.sort({
+                sortBy: column.key,
+                sortDirection: sortDirection === SortDirection.ASC ?
+                    SortDirection.DESC : SortDirection.ASC,
+              });
+            } else if (rowIndex === 0 && column.sortable) {
+              this.sort({
+                sortBy: column.key,
+                sortDirection: SortDirection.ASC,
+              });
+            } else if (rowIndex !== 0) {
+              onRowClicked(data);
+            }
+          }}
+        >
+          {
+            rowIndex === 0 && sortBy === column.key &&
+            <span className="grid-sort-indicator">
+              <i
+                className={classNames('fa', {
+                  'fa-sort-asc': sortDirection === SortDirection.ASC,
+                  'fa-sort-desc': sortDirection === SortDirection.DESC,
+                })}
+              />
+            </span>
+          }
+          <div className="grid-cell-data">
+            {rowIndex === 0 ? data[column.key] :
+              DataGrid.formatData(ui, column, data)}
+          </div>
+          {
+            rowIndex === 0 && column.filterable &&
+            <input
+              type="text"
+              className="filter-input"
+              onClick={(e) => {
+                // when we click on the input we need to prevent sorting
+                e.stopPropagation();
+              }}
+              ref={(input) => {
+                this.filters[column.key] = input;
+              }}
+              value={filter && filter.value ? filter.value : ''}
+              onChange={(e) => {
+                const filterObj = {
+                  key: column.key,
+                  value: e.target.value,
+                };
+
+                this.onFilterChanged(filterObj);
+              }}
+            />
+          }
+          {
+            rowIndex === 0 && column.filterable &&
+            <a
+              className={classNames('grid-filter-indicator', {
+                active: filter && filter.value,
+              })}
+              tabIndex={columnIndex}
+              onClick={(e) => {
+                e.stopPropagation();
+                this.onFilterClicked(column.key);
+              }}
+            >
+              <i
+                className="fa fa-filter fa-fw"
+              />
+            </a>
+          }
+        </div>
+      </CellMeasurer>
+    );
+  }
+
   render() {
+    console.log('here');
     return (
       <AutoSizer>
         {this.renderMultiGrid}
@@ -222,8 +531,6 @@ DataGrid.propTypes = {
     sortBy: PropTypes.string,
     sortDirection: PropTypes.string,
   }),
-
-
   columnWidthMultiplier: PropTypes.number,
 };
 
