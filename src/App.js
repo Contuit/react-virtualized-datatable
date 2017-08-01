@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import DataGrid from './DataGrid';
+import DataGrid from 'components/DataGrid';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'font-awesome/css/font-awesome.css';
 import './App.css';
-import './DataGrid.scss';
+import 'components/DataGrid/DataGrid.scss';
 
 // data for the grid
 const items = [
