@@ -84,6 +84,7 @@ class DataGrid extends Component {
 
       filters: {},
       filterOpened: false,
+      scrolledAllLeft: true,
     };
 
     // stores the inputs
@@ -129,6 +130,7 @@ class DataGrid extends Component {
   }
 
   componentWillReceiveProps() {
+    console.log('here?');
     if (!this.mainGrid || !this.mainGrid._bottomRightGrid) {
       return;
     }
@@ -137,6 +139,8 @@ class DataGrid extends Component {
     const contentWidth = this.mainGrid._leftGridWidth +
       this.mainGrid._bottomRightGrid._scrollingContainer.scrollWidth;
 
+    console.log(containerWidth);
+    console.log(contentWidth);
     if (containerWidth === contentWidth) {
       this.setState({ scrolledAllLeft: true, scrolledAllRight: true });
     }
@@ -369,8 +373,12 @@ class DataGrid extends Component {
       updateObj.scrolledAllLeft = scrolledAllLeft;
     }
 
+    console.log(updateObj);
     if (updateObj !== {}) {
-      this.setState(updateObj);
+      this.setState(updateObj, () => {
+        console.log(updateObj);
+        this.mainGrid.forceUpdateGrids();
+      });
     }
 
     this.props.onScroll(scrollInfo);
@@ -379,35 +387,28 @@ class DataGrid extends Component {
   renderMultiGrid({ width, height }) {
     const boxShadow = this.state.scrolledAllLeft ?
       false : '1px 3px 3px #a2a2a2';
+
+    console.log(this.state);
     return (
-      <div className="grid-container">
-        <MultiGrid
-          cellRenderer={this.renderCell}
-          columnCount={this.getColumnCount()}
-          columnWidth={this.getColumnWidth}
-          fixedColumnCount={this.getColumnCount() < 2 ? 0 : 1}
-          height={height}
-          rowHeight={this.getRowHeight}
-          rowCount={this.getRowCount()}
-          fixedRowCount={1}
-          deferredMeasurementCache={this.cellSizeCache}
-          noRowsRenderer={DataGrid.emptyRenderer}
-          width={width}
-          onScroll={this.onGridScroll}
-          className={classNames('data-grid', {
-            'scrolled-left': this.state.scrolledAllLeft,
-          })}
-          styleBottomLeftGrid={{ boxShadow }}
-          ref={(grid) => { this.mainGrid = grid; }}
-        />
-        <div
-          className={classNames('scroll-x-indicator', {
-            faded: this.state.scrolledAllRight,
-          })}
-        >
-          <i className="fa fa-fw fa-angle-double-right" />
-        </div>
-      </div>
+      <MultiGrid
+        cellRenderer={this.renderCell}
+        columnCount={this.getColumnCount()}
+        columnWidth={this.getColumnWidth}
+        fixedColumnCount={this.getColumnCount() < 2 ? 0 : 1}
+        height={height}
+        rowHeight={this.getRowHeight}
+        rowCount={this.getRowCount()}
+        fixedRowCount={1}
+        deferredMeasurementCache={this.cellSizeCache}
+        noRowsRenderer={DataGrid.emptyRenderer}
+        width={width}
+        onScroll={this.onGridScroll}
+        className={classNames('data-grid', {
+          'scrolled-left': this.state.scrolledAllLeft,
+        })}
+        styleBottomLeftGrid={{ boxShadow }}
+        ref={(grid) => { this.mainGrid = grid; }}
+      />
     );
   }
 
@@ -539,12 +540,19 @@ class DataGrid extends Component {
   }
 
   render() {
-    console.log('rendering?');
-    console.log(this.state);
     return (
-      <AutoSizer>
-        {this.renderMultiGrid}
-      </AutoSizer>
+      <div className="grid-container">
+        <AutoSizer>
+          {this.renderMultiGrid}
+        </AutoSizer>
+        <div
+          className={classNames('scroll-x-indicator', {
+            faded: this.state.scrolledAllRight,
+          })}
+        >
+          <i className="fa fa-fw fa-angle-double-right" />
+        </div>
+      </div>
     );
   }
 }

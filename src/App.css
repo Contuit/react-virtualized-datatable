@@ -18,4 +18,5 @@
 .grid-demo {
   height: 300px;
   width: 800px;
+  max-width: 100%;
 }

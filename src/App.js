@@ -20,6 +20,7 @@ const columns = [
   {
     name: 'Col 3',
     key: 'col3',
+    sortable: false,
     type: 'string',
     isPrimary: true,
     formatter: (item) => {

@@ -23,6 +23,11 @@ $break-large: 1200px;
   }
 }
 
+.grid-container {
+  height: 100%;
+  width: 100%;
+}
+
 .grid-container > div > div {
   &:first-child > .data-grid {
     &:first-child {
