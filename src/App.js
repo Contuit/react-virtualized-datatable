@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import DataGrid from './DataGrid';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'font-awesome/css/font-awesome.css';
 import './App.css';
+import './DataGrid.scss';
 
 // data for the grid
 const items = [
@@ -24,10 +27,12 @@ class App extends Component {
         <div className="App-header">
           <h2>React Data Grid</h2>
         </div>
-        <DataGrid
-          items={items}
-          columns={columns}
-        />
+        <div className="grid-demo">
+          <DataGrid
+            items={items}
+            columns={columns}
+          />
+        </div>
       </div>
     );
   }

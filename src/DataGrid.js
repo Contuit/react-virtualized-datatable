@@ -10,7 +10,6 @@ import {
   SortDirection,
   CellMeasurerCache,
 } from 'react-virtualized';
-import './App.css';
 
 class DataGrid extends Component {
   static _formatDateWithString(date, string) {
@@ -112,7 +111,7 @@ class DataGrid extends Component {
         defaultSort.sortDirection = SortDirection.DESC;
       }
 
-      this.sort(defaultSort);
+      this.setTableSort(defaultSort);
     }
 
     setTimeout(() => {
@@ -166,6 +165,8 @@ class DataGrid extends Component {
     this.setState({
       filterOpened: !this.state.filterOpened,
       focusCol: this.state.filterOpened ? null : colKey,
+    }, () => {
+      this.mainGrid.forceUpdateGrids();
     });
     // prevent bubbling to the header
     return false;
@@ -221,8 +222,6 @@ class DataGrid extends Component {
     }
 
     const sorted = this._sortRows(this._filterRows(items));
-
-    console.log(sorted);
 
     // get the name of each column into an array
     const colNames = {};
@@ -320,9 +319,18 @@ class DataGrid extends Component {
     });
   }
 
-  setTableSort() {
-    // TODO: set correct state???
-    this.setState();
+  setTableSort({ sortBy, sortDirection }) {
+    if (!sortBy) {
+      throw new Error('setTableSort requires sortBy option');
+    }
+
+    if (!sortDirection) {
+      throw new Error('setTableSort requires sortDirection option');
+    }
+
+    this.setState({ ...this.state, sortBy, sortDirection }, () => {
+      this.mainGrid.forceUpdateGrids();
+    });
   }
 
   setTableFilter() {
@@ -443,13 +451,13 @@ class DataGrid extends Component {
           }}
           onClick={() => {
             if (rowIndex === 0 && sortBy === column.key && column.sortable) {
-              this.sort({
+              this.setTableSort({
                 sortBy: column.key,
                 sortDirection: sortDirection === SortDirection.ASC ?
                     SortDirection.DESC : SortDirection.ASC,
               });
             } else if (rowIndex === 0 && column.sortable) {
-              this.sort({
+              this.setTableSort({
                 sortBy: column.key,
                 sortDirection: SortDirection.ASC,
               });
