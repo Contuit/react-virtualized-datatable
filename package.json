@@ -5,8 +5,10 @@
   "devDependencies": {
     "chai": "3.5.0",
     "enzyme": "^2.8.2",
+    "node-sass": "^4.5.3",
     "react-scripts": "1.0.7",
     "react-test-renderer": "^15.5.4",
+    "sass-loader": "^6.0.6",
     "sinon": "^2.3.2",
     "sinon-chai": "^2.10.0"
   },
