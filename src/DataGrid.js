@@ -28,7 +28,7 @@ class DataGrid extends Component {
     return tryFormat;
   }
 
-  static formatData(uiState, column, data) {
+  static formatData(column, data) {
     if (_.isFunction(column.formatter)) {
       return column.formatter(data);
     }
@@ -45,20 +45,23 @@ class DataGrid extends Component {
       myData = data[column.key];
     }
 
+    return DataGrid.formatValue(myData, column.type);
+  }
 
-    switch (column.type) {
+  static formatValue(value, type) {
+    switch (type) {
       case 'date':
-        return DataGrid._formatDateWithString(myData, 'M/D/YYYY');
+        return DataGrid._formatDateWithString(value, 'M/D/YYYY');
       case 'dateTime':
-        return DataGrid._formatDateWithString(myData, 'M/D/YYYY HH:mm');
+        return DataGrid._formatDateWithString(value, 'M/D/YYYY HH:mm');
       case 'array':
         return (
           <ul>
-            { myData.map(item => (<li key={item}>{item}</li>)) }
+            { value.map(item => (<li key={item}>{item}</li>)) }
           </ul>
         );
       default:
-        return myData;
+        return value;
     }
   }
 
@@ -298,20 +301,28 @@ class DataGrid extends Component {
 
   _sortRows(items) {
     const { sortBy, sortDirection } = this.state;
+    const sortCol = _.findWhere(this.getColumns(), { key: sortBy });
+
+    // trying to sort by a column that is not part of this table
+    if (!sortCol) {
+      return items;
+    }
     return items.sort((a, b) => {
-      if (typeof a[sortBy] === 'undefined') {
+      const aVal = DataGrid.formatData(sortCol, a);
+      const bVal = DataGrid.formatData(sortCol, b);
+      if (typeof aVal === 'undefined') {
         return 1;
       }
 
-      if (typeof b[sortBy] === 'undefined') {
+      if (typeof bVal === 'undefined') {
         return -1;
       }
 
-      if (a[sortBy] < b[sortBy]) {
+      if (aVal < bVal) {
         return sortDirection === SortDirection.ASC ? -1 : 1;
       }
 
-      if (a[sortBy] > b[sortBy]) {
+      if (aVal > bVal) {
         return sortDirection === SortDirection.ASC ? 1 : -1;
       }
 
@@ -401,7 +412,7 @@ class DataGrid extends Component {
   }
 
   renderCell({ columnIndex, rowIndex, style, parent }) {
-    const { ui, onRowClicked } = this.props;
+    const { onRowClicked } = this.props;
     const data = this.getRows(rowIndex);
 
     if (!data) {
@@ -479,7 +490,7 @@ class DataGrid extends Component {
           }
           <div className="grid-cell-data">
             {rowIndex === 0 ? data[column.key] :
-              DataGrid.formatData(ui, column, data)}
+              DataGrid.formatData(column, data)}
           </div>
           {
             rowIndex === 0 && column.filterable &&
