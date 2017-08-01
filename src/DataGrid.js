@@ -172,11 +172,14 @@ class DataGrid extends Component {
   }
 
   onFilterChanged(filterObj) {
-    const nextState = Object.assign({}, this.state);
-
-    nextState.filters[filterObj.key] = filterObj;
-    this.setState(nextState, () => {
-      this.mainGrid.forceUpdate();
+    this.setState({
+      ...this.state,
+      filters: {
+        ...this.state.filters,
+        [filterObj.key]: filterObj,
+      }
+    }, () => {
+      this.mainGrid.forceUpdateGrids();
     });
   }
 
@@ -218,6 +221,8 @@ class DataGrid extends Component {
     }
 
     const sorted = this._sortRows(this._filterRows(items));
+
+    console.log(sorted);
 
     // get the name of each column into an array
     const colNames = {};
@@ -263,7 +268,7 @@ class DataGrid extends Component {
       return items;
     }
 
-    const filterItem = (keep, item, filterKey) => {
+    const filterItem = (result, item, filterKey) => {
       const filterObj = filters[filterKey];
       const filterVal = filterObj.value.toLowerCase();
 
@@ -272,24 +277,23 @@ class DataGrid extends Component {
       }
 
       if (!item[filterObj.key]) {
-        keep = false;
+        result.keep = false;
         return;
       }
 
-      const itemVal = item[filterObj.key] &&
-                      item[filterObj.key].toLowerCase();
+      const itemVal = item[filterObj.key].toLowerCase();
 
       if (itemVal && itemVal.indexOf(filterVal) < 0) {
-        keep = false;
+        result.keep = false;
       }
     };
 
     return items.filter((item) => {
-      let keep = true;
+      let result = { keep: true };
 
-      Object.keys(filters).forEach(filterItem.bind(null, keep, item));
+      Object.keys(filters).forEach(filterItem.bind(null, result, item));
 
-      return keep;
+      return result.keep;
     });
   }
 
@@ -391,10 +395,14 @@ class DataGrid extends Component {
   renderCell({ columnIndex, rowIndex, style, parent }) {
     const { ui, onRowClicked } = this.props;
     const data = this.getRows(rowIndex);
+
+    if (!data) {
+      return null;
+    }
+
     const column = this.getColumn(columnIndex);
     const { sortBy, sortDirection } = this.state;
     const filter = this.state.filters[column.key];
-    console.log(filter);
 
     return (
       <CellMeasurer
@@ -429,11 +437,9 @@ class DataGrid extends Component {
             this.setState({
               hoveredColumnIndex: columnIndex,
               hoveredRowIndex: rowIndex,
+            }, () => {
+              this.mainGrid.forceUpdateGrids();
             });
-
-            if (this.grid) {
-              this.grid.forceUpdate();
-            }
           }}
           onClick={() => {
             if (rowIndex === 0 && sortBy === column.key && column.sortable) {
@@ -486,6 +492,7 @@ class DataGrid extends Component {
                   value: e.target.value,
                 };
 
+                console.log(filterObj);
                 this.onFilterChanged(filterObj);
               }}
             />
@@ -513,7 +520,8 @@ class DataGrid extends Component {
   }
 
   render() {
-    console.log('here');
+    console.log('rendering?');
+    console.log(this.state);
     return (
       <AutoSizer>
         {this.renderMultiGrid}
