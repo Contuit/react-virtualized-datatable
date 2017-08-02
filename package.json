@@ -1,6 +1,6 @@
 {
   "name": "react-virtualized-datatable",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "main": "lib/index.js",
   "devDependencies": {
     "autoprefixer": "7.1.0",
