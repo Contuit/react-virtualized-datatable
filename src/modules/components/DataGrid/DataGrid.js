@@ -405,7 +405,6 @@ class DataGrid extends Component {
 
     return (
       <MultiGrid
-        {...gridProps}
         cellRenderer={this.renderCell}
         columnCount={colCount}
         columnWidth={this.getColumnWidth}
@@ -561,7 +560,9 @@ class DataGrid extends Component {
   render() {
     return (
       <div className="grid-container">
-        <AutoSizer>
+        <AutoSizer
+          {...this.props.gridProps}
+        >
           {this.renderMultiGrid}
         </AutoSizer>
         <div
