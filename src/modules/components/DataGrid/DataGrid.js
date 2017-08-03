@@ -435,8 +435,6 @@ class DataGrid extends Component {
     }
 
     const column = this.getColumn(columnIndex);
-    console.log(column);
-    console.log(this.getColumns());
     if (!column) return '';
 
     const { sortBy, sortDirection } = this.state;
