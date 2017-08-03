@@ -136,7 +136,6 @@ class DataGrid extends Component {
   }
 
   componentWillReceiveProps() {
-    console.log('here?');
     if (!this.mainGrid || !this.mainGrid._bottomRightGrid) {
       return;
     }
@@ -145,8 +144,6 @@ class DataGrid extends Component {
     const contentWidth = this.mainGrid._leftGridWidth +
       this.mainGrid._bottomRightGrid._scrollingContainer.scrollWidth;
 
-    console.log(containerWidth);
-    console.log(contentWidth);
     if (containerWidth === contentWidth) {
       this.setState({ scrolledAllLeft: true, scrolledAllRight: true });
     }
@@ -299,7 +296,6 @@ class DataGrid extends Component {
       }
 
       const itemVal = checkAgainst.toLowerCase();
-      console.log(itemVal);
 
       if (itemVal && itemVal.indexOf(filterVal) < 0) {
         result.keep = false;
@@ -386,7 +382,6 @@ class DataGrid extends Component {
       updateObj.scrolledAllLeft = scrolledAllLeft;
     }
 
-    console.log(updateObj);
     if (updateObj !== {}) {
       this.setState(updateObj, () => {
         if (!this.mainGrid) return;
@@ -408,7 +403,6 @@ class DataGrid extends Component {
       return DataGrid.emptyRenderer();
     }
 
-    console.log(this.state);
     return (
       <MultiGrid
         cellRenderer={this.renderCell}
@@ -441,6 +435,10 @@ class DataGrid extends Component {
     }
 
     const column = this.getColumn(columnIndex);
+    console.log(column);
+    console.log(this.getColumns());
+    if (!column) return '';
+
     const { sortBy, sortDirection } = this.state;
     const filter = this.state.filters[column.key];
 
@@ -533,7 +531,6 @@ class DataGrid extends Component {
                   value: e.target.value,
                 };
 
-                console.log(filterObj);
                 this.onFilterChanged(filterObj);
               }}
             />

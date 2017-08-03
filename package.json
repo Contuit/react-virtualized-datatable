@@ -1,7 +1,10 @@
 {
   "name": "react-virtualized-datatable",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "main": "lib/index.js",
+  "eslintConfig": {
+    "extends": "react-app"
+  },
   "devDependencies": {
     "autoprefixer": "7.1.0",
     "babel-cli": "^6.24.1",
@@ -54,6 +57,7 @@
   "dependencies": {
     "bootstrap": "3.3.7",
     "classnames": "^2.2.5",
+    "eslint-config-airbnb": "^15.1.0",
     "font-awesome": "4.7.0",
     "moment": "^2.18.1",
     "react": "^15.5.4",
@@ -64,7 +68,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "lib": "babel src/node_modules --out-dir lib --copy-files",
+    "lib": "babel src/modules --out-dir lib --copy-files",
     "test": "node scripts/test.js --env=jsdom"
   },
   "jest": {
@@ -96,8 +100,5 @@
     "presets": [
       "react-app"
     ]
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   }
 }

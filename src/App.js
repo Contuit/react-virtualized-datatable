@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import moment from 'moment';
-import DataGrid from 'components/DataGrid';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'font-awesome/css/font-awesome.css';
+import DataGrid from './modules/components/DataGrid';
+import './modules/components/DataGrid/DataGrid.scss';
 import './App.css';
-import 'components/DataGrid/DataGrid.scss';
 
 // data for the grid
 const items = [
