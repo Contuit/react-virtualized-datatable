@@ -393,7 +393,7 @@ class DataGrid extends Component {
   }
 
   renderMultiGrid({ width, height }) {
-    const { fixedColumns } = this.props;
+    const { fixedColumns, gridProps = {} } = this.props;
     const boxShadow = this.state.scrolledAllLeft ?
       false : '1px 3px 3px #a2a2a2';
     const colCount = this.getColumnCount();
@@ -405,6 +405,7 @@ class DataGrid extends Component {
 
     return (
       <MultiGrid
+        {...gridProps}
         cellRenderer={this.renderCell}
         columnCount={colCount}
         columnWidth={this.getColumnWidth}
@@ -580,6 +581,7 @@ DataGrid.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   onRowClicked: PropTypes.func,
   onScroll: PropTypes.func,
+  gridProps: PropTypes.shape(),
   defaultSort: PropTypes.shape({
     sortBy: PropTypes.string,
     sortDirection: PropTypes.string,
