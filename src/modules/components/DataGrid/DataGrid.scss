@@ -23,24 +23,12 @@ $break-large: 1200px;
   }
 }
 
-.grid-container {
-  height: 100%;
-  position: relative;
-  width: 100%;
-}
-
 .grid-container > div > div {
   &:first-child > .data-grid {
     &:first-child {
       border-right: 1px solid $accent-text;
     }
   }
-}
-
-.grid-footer {
-  background-color: $accent-color;
-  bottom: 0;
-  position: fixed;
 }
 
 .grid-header-cell {
@@ -228,10 +216,37 @@ $break-large: 1200px;
   }
 }
 
-.grid-wrapper {
+.grid-container {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  position: relative;
   transition: width $animation-timing ease;
   width: 100%;
+
+  .grid-content {
+    flex: 1;
+  }
+
+  .grid-footer {
+    background-color: $accent-color;
+    color: $accent-text;
+    padding: 5px;
+
+    .paginator {
+      float: right;
+
+      .paginator-label {
+        float: left;
+        margin-right: 10px;
+        margin-top: 5px;
+      }
+    }
+
+    .pagination {
+      margin: 0;
+    }
+  }
 }
 
 .pull-over {

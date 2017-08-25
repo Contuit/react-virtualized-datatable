@@ -578,9 +578,11 @@ class DataGrid extends Component {
 
     return (
       <div className="grid-container">
-        <AutoSizer {...this.props.gridProps} currentPage={currentPage}>
-          {this.renderMultiGrid}
-        </AutoSizer>
+        <div className="grid-content">
+          <AutoSizer {...this.props.gridProps} currentPage={currentPage}>
+            {this.renderMultiGrid}
+          </AutoSizer>
+        </div>
         {paged && this._renderFooter()}
         <div
           className={classNames('scroll-x-indicator', {
@@ -597,16 +599,24 @@ class DataGrid extends Component {
     const { pageSize, totalItemCount, currentPage, onPageChanged } = this.props;
     return (
       <div className="grid-footer">
-        <Pagination
-          bsSize="xsmall"
-          items={Math.ceil(1.0 * totalItemCount / pageSize)}
-          activePage={currentPage}
-          onSelect={eventKey => {
-            onPageChanged(eventKey);
-          }}
-          prev
-          next
-        />
+        <div className="paginator">
+          <div className="paginator-label">
+            <em>
+              Showing {(currentPage - 1) * pageSize + 1} -{' '}
+              {(currentPage - 1) * pageSize + pageSize} of {totalItemCount}
+            </em>
+          </div>
+          <Pagination
+            bsSize="sm"
+            items={Math.ceil(1.0 * totalItemCount / pageSize)}
+            activePage={currentPage}
+            onSelect={eventKey => {
+              onPageChanged(eventKey);
+            }}
+            prev
+            next
+          />
+        </div>
       </div>
     );
   }

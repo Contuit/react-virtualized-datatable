@@ -36,7 +36,16 @@ const items2 = [
   { col1: '(1,1)', col2: '(2,1)', col3: 1542203779000 },
   { col1: '(1,2)', col2: '(2,2)', col3: 1501604957000 },
   { col1: '(1,3)', col2: '(2,3)', col3: 1501592534000 },
-  { col1: '(1,4)', col2: '(2,4)', col3: 1501603876000 }
+  { col1: '(1,4)', col2: '(2,4)', col3: 1501603876000 },
+  { col1: '(1,5)', col2: '(2,5)', col3: 1501604957000 },
+  { col1: '(1,6)', col2: '(2,6)', col3: 1501592534000 },
+  { col1: '(1,7)', col2: '(2,7)', col3: 1501603876000 },
+  { col1: '(1,8)', col2: '(2,8)', col3: 1501604957000 },
+  { col1: '(1,9)', col2: '(2,9)', col3: 1501592534000 },
+  { col1: '(1,10)', col2: '(2,10)', col3: 1501603876000 },
+  { col1: '(1,11)', col2: '(2,11)', col3: 1501604957000 },
+  { col1: '(1,12)', col2: '(2,12)', col3: 1501592534000 },
+  { col1: '(1,13)', col2: '(2,13)', col3: 1501603876000 }
 ];
 
 // column definition for grid
@@ -57,23 +66,33 @@ class PageExample extends Component {
     this.state = {
       currentPage: 1
     };
+
+    this.pageSize = 10;
   }
 
   render() {
-    console.log(_.rest(items2, (this.state.currentPage - 1) * 2));
+    console.log(_.rest(items2, (this.state.currentPage - 1) * this.pageSize));
     return (
-      <div className="grid-demo">
-        <DataGrid
-          items={_.first(_.rest(items2, (this.state.currentPage - 1) * 2), 2)}
-          columns={columns2}
-          totalItemCount={4}
-          paged
-          pageSize={2}
-          currentPage={this.state.currentPage}
-          onPageChanged={page => {
-            this.setState({ currentPage: page });
-          }}
-        />
+      <div>
+        <div className="grid-demo-header">
+          <h1>Paged Demo</h1>
+        </div>
+        <div className="grid-demo">
+          <DataGrid
+            items={_.first(
+              _.rest(items2, (this.state.currentPage - 1) * this.pageSize),
+              this.pageSize
+            )}
+            columns={columns2}
+            totalItemCount={items2.length}
+            paged
+            pageSize={this.pageSize}
+            currentPage={this.state.currentPage}
+            onPageChanged={page => {
+              this.setState({ currentPage: page });
+            }}
+          />
+        </div>
       </div>
     );
   }
@@ -86,11 +105,21 @@ class App extends Component {
         <div className="App-header">
           <h2>React Data Grid</h2>
         </div>
-        <div className="grid-demo">
-          <DataGrid items={items} columns={columns} />
+        <div>
+          <div className="grid-demo-header">
+            <h1>Basic Demo</h1>
+          </div>
+          <div className="grid-demo">
+            <DataGrid items={items} columns={columns} />
+          </div>
         </div>
-        <div className="grid-demo">
-          <DataGrid items={items2} columns={columns2} />
+        <div>
+          <div className="grid-demo-header">
+            <h1>Date Demo</h1>
+          </div>
+          <div className="grid-demo">
+            <DataGrid items={items2} columns={columns2} />
+          </div>
         </div>
         <PageExample />
       </div>
