@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import React, { Component } from 'react';
 import moment from 'moment';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -50,6 +51,34 @@ const columns2 = [
   }
 ];
 
+class PageExample extends Component {
+  constructor() {
+    super();
+    this.state = {
+      currentPage: 1
+    };
+  }
+
+  render() {
+    console.log(_.rest(items2, (this.state.currentPage - 1) * 2));
+    return (
+      <div className="grid-demo">
+        <DataGrid
+          items={_.first(_.rest(items2, (this.state.currentPage - 1) * 2), 2)}
+          columns={columns2}
+          totalItemCount={4}
+          paged
+          pageSize={2}
+          currentPage={this.state.currentPage}
+          onPageChanged={page => {
+            this.setState({ currentPage: page });
+          }}
+        />
+      </div>
+    );
+  }
+}
+
 class App extends Component {
   render() {
     return (
@@ -63,15 +92,7 @@ class App extends Component {
         <div className="grid-demo">
           <DataGrid items={items2} columns={columns2} />
         </div>
-        <div className="grid-demo">
-          <DataGrid
-            items={items2}
-            columns={columns2}
-            paged
-            pageSize={2}
-            currentPage={1}
-          />
-        </div>
+        <PageExample />
       </div>
     );
   }

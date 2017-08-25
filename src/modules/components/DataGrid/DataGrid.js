@@ -574,11 +574,11 @@ class DataGrid extends Component {
   }
 
   render() {
-    const { paged } = this.props;
+    const { paged, currentPage } = this.props;
 
     return (
       <div className="grid-container">
-        <AutoSizer {...this.props.gridProps}>
+        <AutoSizer {...this.props.gridProps} currentPage={currentPage}>
           {this.renderMultiGrid}
         </AutoSizer>
         {paged && this._renderFooter()}
@@ -602,9 +602,10 @@ class DataGrid extends Component {
           items={Math.ceil(1.0 * totalItemCount / pageSize)}
           activePage={currentPage}
           onSelect={eventKey => {
-            console.log('onSelect');
             onPageChanged(eventKey);
           }}
+          prev
+          next
         />
       </div>
     );

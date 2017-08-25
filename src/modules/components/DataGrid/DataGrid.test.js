@@ -88,7 +88,11 @@ it('should have number of pages based on total count and page size', () => {
     />
   );
 
-  expect(wrapper.find('.pagination li').length).toBe(8);
+  expect(
+    // filters out the prev and next
+    wrapper.find('.pagination li').filterWhere(n => !n.find('span').length)
+      .length
+  ).toBe(8);
 });
 
 it('should have number of pages based on total count and page size', () => {
@@ -104,7 +108,10 @@ it('should have number of pages based on total count and page size', () => {
     />
   );
 
-  expect(wrapper.find('.pagination li').length).toBe(1);
+  expect(
+    wrapper.find('.pagination li').filterWhere(n => !n.find('span').length)
+      .length
+  ).toBe(1);
 });
 
 it('should render only page size rows if items.length is > page size', () => {
@@ -147,6 +154,97 @@ it('should call onPageChanged when a new page is clicked', () => {
   );
 
   // click page 2 button
-  wrapper.find('.pagination li a').at(1).simulate('click');
-  expect(pageChangeMock).toHaveBeenCalled();
+  wrapper
+    .find('.pagination li a')
+    .filterWhere(n => !n.find('span').length) // filters out the prev and next
+    .at(1)
+    .simulate('click');
+  expect(pageChangeMock).toBeCalledWith(2);
+});
+
+it('should active class on correct page', () => {
+  const wrapper = mount(
+    <DataGrid
+      items={items}
+      totalItemCount={10}
+      columns={columns}
+      // paging options follow
+      paged
+      pageSize={2}
+      currentPage={2}
+    />
+  );
+
+  // click page 2 button
+  expect(
+    wrapper
+      .find('.pagination li')
+      .filterWhere(n => !n.find('span').length) // filters out the prev and next
+      .at(1)
+      .hasClass('active')
+  ).toBe(true);
+});
+
+it('should have next and back buttons', () => {
+  const wrapper = mount(
+    <DataGrid
+      items={items}
+      totalItemCount={10}
+      columns={columns}
+      // paging options follow
+      paged
+    />
+  );
+
+  // click page 2 button
+  expect(wrapper.find('.pagination [aria-label="Next"]').length).toBe(1);
+  expect(wrapper.find('.pagination [aria-label="Previous"]').length).toBe(1);
+});
+
+it('should call onPageChanged when next is clicked', () => {
+  const pageChangeMock = jest.fn();
+  const wrapper = mount(
+    <DataGrid
+      items={items}
+      totalItemCount={10}
+      columns={columns}
+      // paging options follow
+      paged
+      pageSize={1}
+      currentPage={2}
+      onPageChanged={pageChangeMock}
+    />
+  );
+
+  // click page 2 button
+  wrapper
+    .find('.pagination li a')
+    .filterWhere(n => n.find('span').length) // gets only prev and next
+    .at(1)
+    .simulate('click');
+  expect(pageChangeMock).toBeCalledWith(3);
+});
+
+it('should call onPageChanged when previous is clicked', () => {
+  const pageChangeMock = jest.fn();
+  const wrapper = mount(
+    <DataGrid
+      items={items}
+      totalItemCount={10}
+      columns={columns}
+      // paging options follow
+      paged
+      pageSize={1}
+      currentPage={2}
+      onPageChanged={pageChangeMock}
+    />
+  );
+
+  // click page 2 button
+  wrapper
+    .find('.pagination li a')
+    .filterWhere(n => n.find('span').length) // gets only prev and next
+    .at(0)
+    .simulate('click');
+  expect(pageChangeMock).toBeCalledWith(1);
 });
