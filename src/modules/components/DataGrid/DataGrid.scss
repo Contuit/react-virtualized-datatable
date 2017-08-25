@@ -25,6 +25,7 @@ $break-large: 1200px;
 
 .grid-container {
   height: 100%;
+  position: relative;
   width: 100%;
 }
 
@@ -34,6 +35,12 @@ $break-large: 1200px;
       border-right: 1px solid $accent-text;
     }
   }
+}
+
+.grid-footer {
+  background-color: $accent-color;
+  bottom: 0;
+  position: fixed;
 }
 
 .grid-header-cell {
@@ -166,7 +173,7 @@ $break-large: 1200px;
   color: $accent-text;
   position: absolute;
   right: 5px;
-  text-decoration: underline;;
+  text-decoration: underline;
   top: 13px;
 
   &:hover,
@@ -269,7 +276,6 @@ $break-large: 1200px;
 }
 
 .pull-over-open {
-
   .grid-wrapper {
     transition: width $animation-timing ease;
     width: 70%;

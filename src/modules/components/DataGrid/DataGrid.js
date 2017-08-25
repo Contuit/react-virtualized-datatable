@@ -3,6 +3,7 @@ import moment from 'moment';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { Pagination } from 'react-bootstrap';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import MultiGrid from 'react-virtualized/dist/commonjs/MultiGrid';
 import CellMeasurer from 'react-virtualized/dist/commonjs/CellMeasurer';
@@ -11,11 +12,7 @@ import CellMeasurerCache from 'react-virtualized/dist/commonjs/CellMeasurer/Cell
 
 class DataGrid extends Component {
   static emptyRenderer() {
-    return (
-      <div className="no-rows">
-        No rows
-      </div>
-    );
+    return <div className="no-rows">No rows</div>;
   }
 
   static _formatDateWithString(date, string) {
@@ -63,7 +60,11 @@ class DataGrid extends Component {
       case 'array':
         return (
           <ul>
-            { value.map(item => (<li key={item}>{item}</li>)) }
+            {value.map(item =>
+              <li key={item}>
+                {item}
+              </li>
+            )}
           </ul>
         );
       default:
@@ -76,7 +77,7 @@ class DataGrid extends Component {
 
     this.cellSizeCache = new CellMeasurerCache({
       fixedWidth: true,
-      defaultHeight: 45,
+      defaultHeight: 45
       // minHeight: browser.lessThan.small ? 40 : 50,
     });
 
@@ -90,7 +91,7 @@ class DataGrid extends Component {
 
       filters: {},
       filterOpened: false,
-      scrolledAllLeft: true,
+      scrolledAllLeft: true
     };
 
     // stores the inputs
@@ -113,11 +114,15 @@ class DataGrid extends Component {
     }
 
     if (defaultSort) {
-      if (_.isString(defaultSort.sortDirection) &&
-          defaultSort.sortDirection.toLowerCase() === 'asc') {
+      if (
+        _.isString(defaultSort.sortDirection) &&
+        defaultSort.sortDirection.toLowerCase() === 'asc'
+      ) {
         defaultSort.sortDirection = SortDirection.ASC;
-      } else if (_.isString(defaultSort.sortDirection) &&
-          defaultSort.sortDirection.toLowerCase() === 'desc') {
+      } else if (
+        _.isString(defaultSort.sortDirection) &&
+        defaultSort.sortDirection.toLowerCase() === 'desc'
+      ) {
         defaultSort.sortDirection = SortDirection.DESC;
       }
 
@@ -125,11 +130,15 @@ class DataGrid extends Component {
     }
 
     setTimeout(() => {
-      if (!this.mainGrid) { return; }
+      if (!this.mainGrid) {
+        return;
+      }
       // this.cellSizeCache.clearAll();
       this.mainGrid.measureAllCells();
       setTimeout(() => {
-        if (!this.mainGrid) { return; }
+        if (!this.mainGrid) {
+          return;
+        }
         this.mainGrid.recomputeGridSize();
       }, 1);
     }, 1);
@@ -141,7 +150,8 @@ class DataGrid extends Component {
     }
 
     const containerWidth = this.mainGrid._containerBottomStyle.width;
-    const contentWidth = this.mainGrid._leftGridWidth +
+    const contentWidth =
+      this.mainGrid._leftGridWidth +
       this.mainGrid._bottomRightGrid._scrollingContainer.scrollWidth;
 
     if (containerWidth === contentWidth) {
@@ -172,28 +182,34 @@ class DataGrid extends Component {
   }
 
   onFilterClicked(colKey) {
-    this.setState({
-      filterOpened: !this.state.filterOpened,
-      focusCol: this.state.filterOpened ? null : colKey,
-    }, () => {
-      if (!this.mainGrid) return;
-      this.mainGrid.forceUpdateGrids();
-    });
+    this.setState(
+      {
+        filterOpened: !this.state.filterOpened,
+        focusCol: this.state.filterOpened ? null : colKey
+      },
+      () => {
+        if (!this.mainGrid) return;
+        this.mainGrid.forceUpdateGrids();
+      }
+    );
     // prevent bubbling to the header
     return false;
   }
 
   onFilterChanged(filterObj) {
-    this.setState({
-      ...this.state,
-      filters: {
-        ...this.state.filters,
-        [filterObj.key]: filterObj,
+    this.setState(
+      {
+        ...this.state,
+        filters: {
+          ...this.state.filters,
+          [filterObj.key]: filterObj
+        }
+      },
+      () => {
+        if (!this.mainGrid) return;
+        this.mainGrid.forceUpdateGrids();
       }
-    }, () => {
-      if (!this.mainGrid) return;
-      this.mainGrid.forceUpdateGrids();
-    });
+    );
   }
 
   getColumnCount() {
@@ -201,7 +217,10 @@ class DataGrid extends Component {
   }
 
   getRowCount() {
-    return this.getRows().length;
+    const length = this.getRows().length;
+    return this.props.paged
+      ? Math.min(length, this.props.pageSize + 1)
+      : length;
   }
 
   /**
@@ -216,7 +235,7 @@ class DataGrid extends Component {
     // adds defaults to the column
     return _.defaults(this.getColumns()[index], {
       sortable: true,
-      filterable: true,
+      filterable: true
     });
   }
 
@@ -237,7 +256,7 @@ class DataGrid extends Component {
 
     // get the name of each column into an array
     const colNames = {};
-    this.getColumns().forEach((col) => {
+    this.getColumns().forEach(col => {
       colNames[col.key] = col.name;
     });
 
@@ -302,7 +321,7 @@ class DataGrid extends Component {
       }
     };
 
-    return items.filter((item) => {
+    return items.filter(item => {
       let result = { keep: true };
 
       Object.keys(filters).forEach(filterItem.bind(null, result, item));
@@ -363,14 +382,9 @@ class DataGrid extends Component {
   }
 
   onGridScroll(scrollInfo) {
-    const {
-      scrollLeft,
-      clientWidth,
-      scrollWidth,
-    } = scrollInfo;
+    const { scrollLeft, clientWidth, scrollWidth } = scrollInfo;
 
-    const scrolledAllRight =
-      (scrollLeft + clientWidth >= scrollWidth);
+    const scrolledAllRight = scrollLeft + clientWidth >= scrollWidth;
     const scrolledAllLeft = scrollLeft === 0;
 
     const updateObj = {};
@@ -393,9 +407,10 @@ class DataGrid extends Component {
   }
 
   renderMultiGrid({ width, height }) {
-    const { fixedColumns, gridProps = {} } = this.props;
-    const boxShadow = this.state.scrolledAllLeft ?
-      false : '1px 3px 3px #a2a2a2';
+    const { fixedColumns } = this.props;
+    const boxShadow = this.state.scrolledAllLeft
+      ? false
+      : '1px 3px 3px #a2a2a2';
     const colCount = this.getColumnCount();
     const rowCount = this.getRowCount();
 
@@ -418,10 +433,12 @@ class DataGrid extends Component {
         width={width}
         onScroll={this.onGridScroll}
         className={classNames('data-grid', {
-          'scrolled-left': this.state.scrolledAllLeft,
+          'scrolled-left': this.state.scrolledAllLeft
         })}
         styleBottomLeftGrid={{ boxShadow }}
-        ref={(grid) => { this.mainGrid = grid; }}
+        ref={grid => {
+          this.mainGrid = grid;
+        }}
       />
     );
   }
@@ -447,7 +464,7 @@ class DataGrid extends Component {
         key={`${columnIndex},${rowIndex}`}
         parent={parent}
         rowIndex={rowIndex}
-        ref={(cellMeasurer) => {
+        ref={cellMeasurer => {
           this.cellMeasurer = cellMeasurer;
         }}
       >
@@ -455,7 +472,7 @@ class DataGrid extends Component {
           style={{
             ...style,
             maxWidth: 1000,
-            width: this.getColumnWidth({ index: columnIndex }),
+            width: this.getColumnWidth({ index: columnIndex })
           }}
           className={classNames({
             'grid-header-cell': rowIndex === 0,
@@ -467,109 +484,128 @@ class DataGrid extends Component {
             'grid-cell-filter': rowIndex === 0 && this.state.filterOpened,
             'grid-cell-sort': rowIndex === 0 && sortBy === column.key,
             'grid-row-hovered': rowIndex === this.state.hoveredRowIndex,
-            'grid-column-hovered': columnIndex === this.state.hoveredColumnIndex,
+            'grid-column-hovered': columnIndex === this.state.hoveredColumnIndex
           })}
           onMouseOver={() => {
-            this.setState({
-              hoveredColumnIndex: columnIndex,
-              hoveredRowIndex: rowIndex,
-            }, () => {
-              if (!this.mainGrid) return;
-              this.mainGrid.forceUpdateGrids();
-            });
+            this.setState(
+              {
+                hoveredColumnIndex: columnIndex,
+                hoveredRowIndex: rowIndex
+              },
+              () => {
+                if (!this.mainGrid) return;
+                this.mainGrid.forceUpdateGrids();
+              }
+            );
           }}
           onClick={() => {
             if (rowIndex === 0 && sortBy === column.key && column.sortable) {
               this.setTableSort({
                 sortBy: column.key,
-                sortDirection: sortDirection === SortDirection.ASC ?
-                    SortDirection.DESC : SortDirection.ASC,
+                sortDirection:
+                  sortDirection === SortDirection.ASC
+                    ? SortDirection.DESC
+                    : SortDirection.ASC
               });
             } else if (rowIndex === 0 && column.sortable) {
               this.setTableSort({
                 sortBy: column.key,
-                sortDirection: SortDirection.ASC,
+                sortDirection: SortDirection.ASC
               });
             } else if (rowIndex !== 0) {
               onRowClicked(data);
             }
           }}
         >
-          {
-            rowIndex === 0 && sortBy === column.key &&
+          {rowIndex === 0 &&
+            sortBy === column.key &&
             <span className="grid-sort-indicator">
               <i
                 className={classNames('fa', {
                   'fa-sort-asc': sortDirection === SortDirection.ASC,
-                  'fa-sort-desc': sortDirection === SortDirection.DESC,
+                  'fa-sort-desc': sortDirection === SortDirection.DESC
                 })}
               />
-            </span>
-          }
+            </span>}
           <div className="grid-cell-data">
-            {rowIndex === 0 ? data[column.key] :
-              DataGrid.formatData(column, data)}
+            {rowIndex === 0
+              ? data[column.key]
+              : DataGrid.formatData(column, data)}
           </div>
-          {
-            rowIndex === 0 && column.filterable &&
+          {rowIndex === 0 &&
+            column.filterable &&
             <input
               type="text"
               className="filter-input"
-              onClick={(e) => {
+              onClick={e => {
                 // when we click on the input we need to prevent sorting
                 e.stopPropagation();
               }}
-              ref={(input) => {
+              ref={input => {
                 this.filters[column.key] = input;
               }}
               value={filter && filter.value ? filter.value : ''}
-              onChange={(e) => {
+              onChange={e => {
                 const filterObj = {
                   key: column.key,
-                  value: e.target.value,
+                  value: e.target.value
                 };
 
                 this.onFilterChanged(filterObj);
               }}
-            />
-          }
-          {
-            rowIndex === 0 && column.filterable &&
+            />}
+          {rowIndex === 0 &&
+            column.filterable &&
             <a
               className={classNames('grid-filter-indicator', {
-                active: filter && filter.value,
+                active: filter && filter.value
               })}
               tabIndex={columnIndex}
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 this.onFilterClicked(column.key);
               }}
             >
-              <i
-                className="fa fa-filter fa-fw"
-              />
-            </a>
-          }
+              <i className="fa fa-filter fa-fw" />
+            </a>}
         </div>
       </CellMeasurer>
     );
   }
 
   render() {
+    const { paged } = this.props;
+
     return (
       <div className="grid-container">
-        <AutoSizer
-          {...this.props.gridProps}
-        >
+        <AutoSizer {...this.props.gridProps}>
           {this.renderMultiGrid}
         </AutoSizer>
+        {paged && this._renderFooter()}
         <div
           className={classNames('scroll-x-indicator', {
-            faded: this.state.scrolledAllRight,
+            faded: this.state.scrolledAllRight
           })}
         >
           <i className="fa fa-fw fa-angle-double-right" />
         </div>
+      </div>
+    );
+  }
+
+  _renderFooter() {
+    const { pageSize, totalItemCount, currentPage, onPageChanged } = this.props;
+    return (
+      <div className="grid-footer">
+        <Pagination
+          bsSize="xsmall"
+          items={Math.ceil(1.0 * totalItemCount / pageSize)}
+          activePage={currentPage}
+          onSelect={eventKey => {
+            console.log('onSelect');
+            onPageChanged(eventKey);
+          }}
+        />
       </div>
     );
   }
@@ -583,10 +619,17 @@ DataGrid.propTypes = {
   gridProps: PropTypes.shape(),
   defaultSort: PropTypes.shape({
     sortBy: PropTypes.string,
-    sortDirection: PropTypes.string,
+    sortDirection: PropTypes.string
   }),
   columnWidthMultiplier: PropTypes.number,
   fixedColumns: PropTypes.number,
+
+  // paging props follow
+  paged: PropTypes.bool,
+  pageSize: PropTypes.number,
+  currentPage: PropTypes.number,
+  totalItemCount: PropTypes.number,
+  onPageChanged: PropTypes.func
 };
 
 DataGrid.defaultProps = {
@@ -598,6 +641,13 @@ DataGrid.defaultProps = {
   onPageChange: () => {},
   onScroll: () => {},
   onRowClicked: () => {},
+
+  // paging props follow
+  paged: false,
+  pageSize: 50,
+  currentPage: 1,
+  totalItemCount: 0,
+  onPageChanged: () => {}
 };
 
 export default DataGrid;
