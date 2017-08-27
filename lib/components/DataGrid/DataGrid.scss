@@ -23,11 +23,6 @@ $break-large: 1200px;
   }
 }
 
-.grid-container {
-  height: 100%;
-  width: 100%;
-}
-
 .grid-container > div > div {
   &:first-child > .data-grid {
     &:first-child {
@@ -91,7 +86,6 @@ $break-large: 1200px;
   padding: 0 10px;
   text-overflow: ellipsis;
   transition: font $animation-timing ease;
-  white-space: nowrap;
 
   .btn {
     margin-right: 3px;
@@ -166,7 +160,7 @@ $break-large: 1200px;
   color: $accent-text;
   position: absolute;
   right: 5px;
-  text-decoration: underline;;
+  text-decoration: underline;
   top: 13px;
 
   &:hover,
@@ -221,10 +215,37 @@ $break-large: 1200px;
   }
 }
 
-.grid-wrapper {
+.grid-container {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  position: relative;
   transition: width $animation-timing ease;
   width: 100%;
+
+  .grid-content {
+    flex: 1;
+  }
+
+  .grid-footer {
+    background-color: $accent-color;
+    color: $accent-text;
+    padding: 5px;
+
+    .paginator {
+      float: right;
+
+      .paginator-label {
+        float: left;
+        margin-right: 10px;
+        margin-top: 5px;
+      }
+    }
+
+    .pagination {
+      margin: 0;
+    }
+  }
 }
 
 .pull-over {
@@ -269,7 +290,6 @@ $break-large: 1200px;
 }
 
 .pull-over-open {
-
   .grid-wrapper {
     transition: width $animation-timing ease;
     width: 70%;

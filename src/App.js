@@ -33,7 +33,12 @@ const columns = [
 
 // data for the grid
 const items2 = [
-  { col1: '(1,1)', col2: '(2,1)', col3: 1542203779000 },
+  {
+    col1: '(1,1)',
+    col2:
+      'quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nul',
+    col3: 1542203779000
+  },
   { col1: '(1,2)', col2: '(2,2)', col3: 1501604957000 },
   { col1: '(1,3)', col2: '(2,3)', col3: 1501592534000 },
   { col1: '(1,4)', col2: '(2,4)', col3: 1501603876000 },
@@ -115,7 +120,7 @@ class App extends Component {
         </div>
         <div>
           <div className="grid-demo-header">
-            <h1>Date Demo</h1>
+            <h1>Data Demo</h1>
           </div>
           <div className="grid-demo">
             <DataGrid items={items2} columns={columns2} />
