@@ -138,8 +138,8 @@ it('should render normal number of rows with no paged prop', () => {
   expect(wrapper.find(MultiGrid).prop('rowCount')).toBe(5);
 });
 
-it('should call onPageChanged when a new page is clicked', () => {
-  const pageChangeMock = jest.fn();
+it('should call onUpdateDataNeeded when a new page is clicked', () => {
+  const updateDataMock = jest.fn();
   const wrapper = mount(
     <DataGrid
       items={items}
@@ -149,7 +149,7 @@ it('should call onPageChanged when a new page is clicked', () => {
       paged
       pageSize={2}
       currentPage={1}
-      onPageChanged={pageChangeMock}
+      onUpdateDataNeeded={updateDataMock}
     />
   );
 
@@ -159,7 +159,7 @@ it('should call onPageChanged when a new page is clicked', () => {
     .filterWhere(n => !n.find('span').length) // filters out the prev and next
     .at(1)
     .simulate('click');
-  expect(pageChangeMock).toBeCalledWith(2);
+  expect(updateDataMock).toBeCalledWith({ page: 2 });
 });
 
 it('should active class on correct page', () => {
@@ -201,8 +201,8 @@ it('should have next and back buttons', () => {
   expect(wrapper.find('.pagination [aria-label="Previous"]').length).toBe(1);
 });
 
-it('should call onPageChanged when next is clicked', () => {
-  const pageChangeMock = jest.fn();
+it('should call onUpdateDataNeeded when next is clicked', () => {
+  const updateDataMock = jest.fn();
   const wrapper = mount(
     <DataGrid
       items={items}
@@ -212,7 +212,7 @@ it('should call onPageChanged when next is clicked', () => {
       paged
       pageSize={1}
       currentPage={2}
-      onPageChanged={pageChangeMock}
+      onUpdateDataNeeded={updateDataMock}
     />
   );
 
@@ -222,11 +222,11 @@ it('should call onPageChanged when next is clicked', () => {
     .filterWhere(n => n.find('span').length) // gets only prev and next
     .at(1)
     .simulate('click');
-  expect(pageChangeMock).toBeCalledWith(3);
+  expect(updateDataMock).toBeCalledWith({ page: 3 });
 });
 
-it('should call onPageChanged when previous is clicked', () => {
-  const pageChangeMock = jest.fn();
+it('should call onUpdateDataNeeded when previous is clicked', () => {
+  const updateDataMock = jest.fn();
   const wrapper = mount(
     <DataGrid
       items={items}
@@ -236,7 +236,7 @@ it('should call onPageChanged when previous is clicked', () => {
       paged
       pageSize={1}
       currentPage={2}
-      onPageChanged={pageChangeMock}
+      onUpdateDataNeeded={updateDataMock}
     />
   );
 
@@ -246,5 +246,5 @@ it('should call onPageChanged when previous is clicked', () => {
     .filterWhere(n => n.find('span').length) // gets only prev and next
     .at(0)
     .simulate('click');
-  expect(pageChangeMock).toBeCalledWith(1);
+  expect(updateDataMock).toBeCalledWith({ page: 1 });
 });

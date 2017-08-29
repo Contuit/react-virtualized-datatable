@@ -69,14 +69,35 @@ class PageExample extends Component {
   constructor() {
     super();
     this.state = {
-      currentPage: 1
+      currentPage: 1,
+      filter: {}
     };
 
     this.pageSize = 10;
   }
 
+  getRows(filtered) {
+    return _.first(
+      _.rest(filtered, (this.state.currentPage - 1) * this.pageSize),
+      this.pageSize
+    );
+  }
+
+  getFilteredRows() {
+    return items2.filter(item => {
+      let matches = true;
+      _.each(this.state.filter, (value, key) => {
+        matches = matches && item[key].includes(value.value);
+      });
+
+      return matches;
+    });
+  }
+
   render() {
-    console.log(_.rest(items2, (this.state.currentPage - 1) * this.pageSize));
+    const filtered = this.getFilteredRows();
+    const rows = this.getRows(filtered);
+    console.log(rows);
     return (
       <div>
         <div className="grid-demo-header">
@@ -84,17 +105,28 @@ class PageExample extends Component {
         </div>
         <div className="grid-demo">
           <DataGrid
-            items={_.first(
-              _.rest(items2, (this.state.currentPage - 1) * this.pageSize),
-              this.pageSize
-            )}
+            items={rows}
             columns={columns2}
-            totalItemCount={items2.length}
+            totalItemCount={filtered.length}
             paged
             pageSize={this.pageSize}
             currentPage={this.state.currentPage}
-            onPageChanged={page => {
-              this.setState({ currentPage: page });
+            // called with the props that have changed requiring a refresh
+            // because of this, we need to check for existance and update our state accordingly
+            onUpdateDataNeeded={({ page, filter }) => {
+              const updateObj = {};
+              if (page) {
+                updateObj.currentPage = page;
+              }
+
+              if (filter) {
+                updateObj.filter = filter;
+
+                // this will need to happen for sort too
+                updateObj.currentPage = 1;
+              }
+
+              this.setState(updateObj);
             }}
           />
         </div>
@@ -110,7 +142,7 @@ class App extends Component {
         <div className="App-header">
           <h2>React Data Grid</h2>
         </div>
-        <div>
+        {/* <div>
           <div className="grid-demo-header">
             <h1>Basic Demo</h1>
           </div>
@@ -125,7 +157,7 @@ class App extends Component {
           <div className="grid-demo">
             <DataGrid items={items2} columns={columns2} />
           </div>
-        </div>
+        </div> */}
         <PageExample />
       </div>
     );

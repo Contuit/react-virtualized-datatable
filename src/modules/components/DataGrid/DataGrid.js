@@ -97,6 +97,8 @@ class DataGrid extends Component {
     // stores the inputs
     this.filters = {};
 
+    this.needsRefresh = false;
+
     this.renderMultiGrid = this.renderMultiGrid.bind(this);
     this.onGridScroll = this.onGridScroll.bind(this);
     this.renderCell = this.renderCell.bind(this);
@@ -130,21 +132,11 @@ class DataGrid extends Component {
     }
 
     setTimeout(() => {
-      if (!this.mainGrid) {
-        return;
-      }
-      // this.cellSizeCache.clearAll();
-      this.mainGrid.measureAllCells();
-      setTimeout(() => {
-        if (!this.mainGrid) {
-          return;
-        }
-        this.mainGrid.recomputeGridSize();
-      }, 1);
+      this._refreshGridSize();
     }, 1);
   }
 
-  componentWillReceiveProps() {
+  componentWillReceiveProps(nextProps) {
     if (!this.mainGrid || !this.mainGrid._bottomRightGrid) {
       return;
     }
@@ -156,6 +148,12 @@ class DataGrid extends Component {
 
     if (containerWidth === contentWidth) {
       this.setState({ scrolledAllLeft: true, scrolledAllRight: true });
+    }
+
+    if (!_.isEqual(nextProps.items, this.props.items)) {
+      this.needsRefresh = true;
+      if (!this.mainGrid) return;
+      this.mainGrid.invalidateCellSizeAfterRender();
     }
   }
 
@@ -179,6 +177,23 @@ class DataGrid extends Component {
         this.filters[this.state.focusCol].focus();
       }, 200);
     }
+
+    if (this.needsRefresh) {
+      console.log('needs refresh size');
+      this._refreshGridSize();
+      this.needsRefresh = false;
+    }
+  }
+
+  _refreshGridSize() {
+    if (!this.mainGrid) {
+      return;
+    }
+    console.log('refreshing size', this.getRowCount());
+    this.cellSizeCache.clearAll();
+    this.mainGrid.measureAllCells();
+    console.log('forcuing update grids');
+    this.mainGrid.forceUpdateGrids();
   }
 
   onFilterClicked(colKey) {
@@ -189,6 +204,7 @@ class DataGrid extends Component {
       },
       () => {
         if (!this.mainGrid) return;
+        console.log('forcuing update grids');
         this.mainGrid.forceUpdateGrids();
       }
     );
@@ -197,19 +213,22 @@ class DataGrid extends Component {
   }
 
   onFilterChanged(filterObj) {
-    this.setState(
-      {
-        ...this.state,
-        filters: {
-          ...this.state.filters,
-          [filterObj.key]: filterObj
-        }
-      },
-      () => {
-        if (!this.mainGrid) return;
-        this.mainGrid.forceUpdateGrids();
+    const newFilters = {
+      ...this.state.filters,
+      [filterObj.key]: filterObj
+    };
+
+    this.setState({ ...this.state, filters: newFilters }, () => {
+      // if this is a paged table, we need to notify that the filter has changed so the data can be
+      // refreshed
+      if (this.props.paged) {
+        this.props.onUpdateDataNeeded({ filter: newFilters });
       }
-    );
+
+      if (!this.props.paged) {
+        this._refreshGridSize();
+      }
+    });
   }
 
   getColumnCount() {
@@ -246,13 +265,15 @@ class DataGrid extends Component {
    * @return {Object} Single object when index >=0
    */
   getRows(index = -1) {
-    const { items } = this.props;
+    const { items, paged } = this.props;
 
     if (!items || !items.length) {
       return [];
     }
 
-    const sorted = this._sortRows(this._filterRows(items));
+    // if we have a paged table, we don't need to do the filtering or sorting internally
+    const filtered = paged ? items : this._filterRows(items);
+    const sorted = paged ? filtered : this._sortRows(filtered);
 
     // get the name of each column into an array
     const colNames = {};
@@ -270,6 +291,8 @@ class DataGrid extends Component {
   getColumnWidth(index) {
     const { columns, columnWidthMultiplier } = this.props;
     const { type, width } = columns[index.index];
+
+    // if its the last column, and the table doesn't take up all the space, the last column should fill
 
     if (typeof width === 'number') {
       return width;
@@ -371,14 +394,8 @@ class DataGrid extends Component {
     }
 
     this.setState({ ...this.state, sortBy, sortDirection }, () => {
-      if (!this.mainGrid) return;
-      this.mainGrid.forceUpdateGrids();
+      this._refreshGridSize();
     });
-  }
-
-  setTableFilter() {
-    // TODO: update filter in the state
-    this.setState();
   }
 
   onGridScroll(scrollInfo) {
@@ -399,6 +416,7 @@ class DataGrid extends Component {
     if (updateObj !== {}) {
       this.setState(updateObj, () => {
         if (!this.mainGrid) return;
+        console.log('forcuing update grids');
         this.mainGrid.forceUpdateGrids();
       });
     }
@@ -417,6 +435,8 @@ class DataGrid extends Component {
     if (rowCount < 2) {
       return DataGrid.emptyRenderer();
     }
+
+    console.log('rendering grid');
 
     return (
       <MultiGrid
@@ -444,6 +464,10 @@ class DataGrid extends Component {
   }
 
   renderCell({ columnIndex, rowIndex, style, parent }) {
+    console.log('rendering cell');
+    if (rowIndex === 1 && columnIndex === 0) {
+      // console.trace();
+    }
     const { onRowClicked } = this.props;
     const data = this.getRows(rowIndex);
 
@@ -471,6 +495,7 @@ class DataGrid extends Component {
         <div
           style={{
             ...style,
+            minHeight: 45,
             maxWidth: 1000,
             width: this.getColumnWidth({ index: columnIndex })
           }}
@@ -494,6 +519,7 @@ class DataGrid extends Component {
               },
               () => {
                 if (!this.mainGrid) return;
+                console.log('forcuing update grids');
                 this.mainGrid.forceUpdateGrids();
               }
             );
@@ -579,7 +605,11 @@ class DataGrid extends Component {
     return (
       <div className="grid-container">
         <div className="grid-content">
-          <AutoSizer {...this.props.gridProps} currentPage={currentPage}>
+          <AutoSizer
+            {...this.props.gridProps}
+            needsRefresh={this.needsRefresh}
+            currentPage={currentPage}
+          >
             {this.renderMultiGrid}
           </AutoSizer>
         </div>
@@ -596,14 +626,24 @@ class DataGrid extends Component {
   }
 
   _renderFooter() {
-    const { pageSize, totalItemCount, currentPage, onPageChanged } = this.props;
+    const {
+      pageSize,
+      totalItemCount,
+      currentPage,
+      onUpdateDataNeeded
+    } = this.props;
+
+    const showing = Math.min(
+      totalItemCount,
+      (currentPage - 1) * pageSize + pageSize
+    );
     return (
       <div className="grid-footer">
         <div className="paginator">
           <div className="paginator-label">
             <em>
-              Showing {(currentPage - 1) * pageSize + 1} -{' '}
-              {(currentPage - 1) * pageSize + pageSize} of {totalItemCount}
+              Showing {(currentPage - 1) * pageSize + 1} - {showing} of{' '}
+              {totalItemCount}
             </em>
           </div>
           <Pagination
@@ -611,7 +651,7 @@ class DataGrid extends Component {
             items={Math.ceil(1.0 * totalItemCount / pageSize)}
             activePage={currentPage}
             onSelect={eventKey => {
-              onPageChanged(eventKey);
+              onUpdateDataNeeded({ page: eventKey });
             }}
             prev
             next
@@ -640,7 +680,7 @@ DataGrid.propTypes = {
   pageSize: PropTypes.number,
   currentPage: PropTypes.number,
   totalItemCount: PropTypes.number,
-  onPageChanged: PropTypes.func
+  onUpdateDataNeeded: PropTypes.func
 };
 
 DataGrid.defaultProps = {
@@ -658,7 +698,7 @@ DataGrid.defaultProps = {
   pageSize: 50,
   currentPage: 1,
   totalItemCount: 0,
-  onPageChanged: () => {}
+  onUpdateDataNeeded: () => {}
 };
 
 export default DataGrid;
