@@ -15,6 +15,36 @@ class DataGrid extends Component {
     return <div className="no-rows">No rows</div>;
   }
 
+  static sortRows(items, columns, { sortBy, sortDirection }) {
+    const sortCol = _.findWhere(columns, { key: sortBy });
+
+    // trying to sort by a column that is not part of this table
+    if (!sortCol) {
+      return items;
+    }
+    return items.sort((a, b) => {
+      const aVal = DataGrid.formatData(sortCol, a);
+      const bVal = DataGrid.formatData(sortCol, b);
+      if (typeof aVal === 'undefined') {
+        return 1;
+      }
+
+      if (typeof bVal === 'undefined') {
+        return -1;
+      }
+
+      if (aVal < bVal) {
+        return sortDirection === SortDirection.ASC ? -1 : 1;
+      }
+
+      if (aVal > bVal) {
+        return sortDirection === SortDirection.ASC ? 1 : -1;
+      }
+
+      return 0;
+    });
+  }
+
   static _formatDateWithString(date, string) {
     const toParse = isNaN(date) ? date : Number(date);
     let tryFormat;
@@ -153,6 +183,7 @@ class DataGrid extends Component {
     if (!_.isEqual(nextProps.items, this.props.items)) {
       this.needsRefresh = true;
       if (!this.mainGrid) return;
+      console.log('invalidating');
       this.mainGrid.invalidateCellSizeAfterRender();
     }
   }
@@ -179,7 +210,6 @@ class DataGrid extends Component {
     }
 
     if (this.needsRefresh) {
-      console.log('needs refresh size');
       this._refreshGridSize();
       this.needsRefresh = false;
     }
@@ -189,10 +219,8 @@ class DataGrid extends Component {
     if (!this.mainGrid) {
       return;
     }
-    console.log('refreshing size', this.getRowCount());
     this.cellSizeCache.clearAll();
     this.mainGrid.measureAllCells();
-    console.log('forcuing update grids');
     this.mainGrid.forceUpdateGrids();
   }
 
@@ -204,7 +232,6 @@ class DataGrid extends Component {
       },
       () => {
         if (!this.mainGrid) return;
-        console.log('forcuing update grids');
         this.mainGrid.forceUpdateGrids();
       }
     );
@@ -292,23 +319,40 @@ class DataGrid extends Component {
     const { columns, columnWidthMultiplier } = this.props;
     const { type, width } = columns[index.index];
 
-    // if its the last column, and the table doesn't take up all the space, the last column should fill
-
+    let newWidth = columnWidthMultiplier * 200;
     if (typeof width === 'number') {
-      return width;
+      newWidth = width;
+    } else {
+      switch (type) {
+        case 'text':
+        case 'list':
+          newWidth = columnWidthMultiplier * 300;
+          break;
+        case 'date':
+          newWidth = columnWidthMultiplier * 150;
+          break;
+        case 'checkbox':
+          newWidth = columnWidthMultiplier * 150;
+          break;
+        default:
+          newWidth = columnWidthMultiplier * 200;
+          break;
+      }
     }
 
-    switch (type) {
-      case 'text':
-      case 'list':
-        return columnWidthMultiplier * 300;
-      case 'date':
-        return columnWidthMultiplier * 150;
-      case 'checkbox':
-        return columnWidthMultiplier * 150;
-      default:
-        return columnWidthMultiplier * 200;
-    }
+    // if its the last column, and the table doesn't take up all the space, the last column should fill
+    // if (index.index === columns.length - 1) {
+    //   let sum = newWidth;
+    //   for (let i = 0; i < index; i++) {
+    //     sum += this.getColumnWidth(i);
+    //   }
+    //
+    //   if (this.container && sum < this.container.offsetWidth) {
+    //     newWidth = this.container.offsetWidth - sum;
+    //   }
+    // }
+
+    return newWidth;
   }
 
   getRowHeight(index) {
@@ -355,36 +399,13 @@ class DataGrid extends Component {
 
   _sortRows(items) {
     const { sortBy, sortDirection } = this.state;
-    const sortCol = _.findWhere(this.getColumns(), { key: sortBy });
-
-    // trying to sort by a column that is not part of this table
-    if (!sortCol) {
-      return items;
-    }
-    return items.sort((a, b) => {
-      const aVal = DataGrid.formatData(sortCol, a);
-      const bVal = DataGrid.formatData(sortCol, b);
-      if (typeof aVal === 'undefined') {
-        return 1;
-      }
-
-      if (typeof bVal === 'undefined') {
-        return -1;
-      }
-
-      if (aVal < bVal) {
-        return sortDirection === SortDirection.ASC ? -1 : 1;
-      }
-
-      if (aVal > bVal) {
-        return sortDirection === SortDirection.ASC ? 1 : -1;
-      }
-
-      return 0;
+    return DataGrid.sortRows(items, this.getColumns(), {
+      sortBy,
+      sortDirection
     });
   }
 
-  setTableSort({ sortBy, sortDirection }) {
+  setTableSort({ sortBy, sortDirection }, callback) {
     if (!sortBy) {
       throw new Error('setTableSort requires sortBy option');
     }
@@ -394,6 +415,8 @@ class DataGrid extends Component {
     }
 
     this.setState({ ...this.state, sortBy, sortDirection }, () => {
+      callback();
+
       this._refreshGridSize();
     });
   }
@@ -416,7 +439,6 @@ class DataGrid extends Component {
     if (updateObj !== {}) {
       this.setState(updateObj, () => {
         if (!this.mainGrid) return;
-        console.log('forcuing update grids');
         this.mainGrid.forceUpdateGrids();
       });
     }
@@ -435,8 +457,6 @@ class DataGrid extends Component {
     if (rowCount < 2) {
       return DataGrid.emptyRenderer();
     }
-
-    console.log('rendering grid');
 
     return (
       <MultiGrid
@@ -463,8 +483,36 @@ class DataGrid extends Component {
     );
   }
 
+  _onSortChanged(column) {
+    const { paged, onUpdateDataNeeded } = this.props;
+    const { sortBy, sortDirection } = this.state;
+    // discard non-sortable columns
+    if (!column.sortable) {
+      return;
+    }
+
+    let newSortObj = {};
+    if (sortBy === column.key && column.sortable) {
+      // clicking the header that is currently sorted invokes sorting in the opposite direction
+      newSortObj.sortBy = column.key;
+      newSortObj.sortDirection =
+        sortDirection === SortDirection.ASC
+          ? SortDirection.DESC
+          : SortDirection.ASC;
+    } else if (column.sortable) {
+      // clicking other headers that are sortable will switch sorting to them, and default to ascending order
+      newSortObj.sortBy = column.key;
+      newSortObj.sortDirection = SortDirection.ASC;
+    }
+
+    this.setTableSort(newSortObj, () => {
+      if (paged) {
+        onUpdateDataNeeded({ sort: newSortObj });
+      }
+    });
+  }
+
   renderCell({ columnIndex, rowIndex, style, parent }) {
-    console.log('rendering cell');
     if (rowIndex === 1 && columnIndex === 0) {
       // console.trace();
     }
@@ -480,6 +528,8 @@ class DataGrid extends Component {
 
     const { sortBy, sortDirection } = this.state;
     const filter = this.state.filters[column.key];
+
+    const rowIsHeader = rowIndex === 0;
 
     return (
       <CellMeasurer
@@ -500,14 +550,14 @@ class DataGrid extends Component {
             width: this.getColumnWidth({ index: columnIndex })
           }}
           className={classNames({
-            'grid-header-cell': rowIndex === 0,
+            'grid-cell': !rowIsHeader,
+            'grid-header-cell': rowIsHeader,
             'grid-header-filterable': column.filterable,
-            'grid-cell': rowIndex > 0,
             'grid-row-even': rowIndex % 2 === 0,
             'first-col': columnIndex === 0,
             'last-col': columnIndex === this.getColumnCount(),
-            'grid-cell-filter': rowIndex === 0 && this.state.filterOpened,
-            'grid-cell-sort': rowIndex === 0 && sortBy === column.key,
+            'grid-cell-filter': rowIsHeader && this.state.filterOpened,
+            'grid-cell-sort': rowIsHeader && sortBy === column.key,
             'grid-row-hovered': rowIndex === this.state.hoveredRowIndex,
             'grid-column-hovered': columnIndex === this.state.hoveredColumnIndex
           })}
@@ -519,31 +569,20 @@ class DataGrid extends Component {
               },
               () => {
                 if (!this.mainGrid) return;
-                console.log('forcuing update grids');
                 this.mainGrid.forceUpdateGrids();
               }
             );
           }}
           onClick={() => {
-            if (rowIndex === 0 && sortBy === column.key && column.sortable) {
-              this.setTableSort({
-                sortBy: column.key,
-                sortDirection:
-                  sortDirection === SortDirection.ASC
-                    ? SortDirection.DESC
-                    : SortDirection.ASC
-              });
-            } else if (rowIndex === 0 && column.sortable) {
-              this.setTableSort({
-                sortBy: column.key,
-                sortDirection: SortDirection.ASC
-              });
-            } else if (rowIndex !== 0) {
+            if (rowIsHeader) {
+              this._onSortChanged(column);
+            } else {
+              // delegate to onRowClicked prop
               onRowClicked(data);
             }
           }}
         >
-          {rowIndex === 0 &&
+          {rowIsHeader &&
             sortBy === column.key &&
             <span className="grid-sort-indicator">
               <i
@@ -554,11 +593,10 @@ class DataGrid extends Component {
               />
             </span>}
           <div className="grid-cell-data">
-            {rowIndex === 0
-              ? data[column.key]
-              : DataGrid.formatData(column, data)}
+            {rowIsHeader ? data[column.key] : DataGrid.formatData(column, data)}
           </div>
-          {rowIndex === 0 &&
+          {/* Filter input */}
+          {rowIsHeader &&
             column.filterable &&
             <input
               type="text"
@@ -580,7 +618,8 @@ class DataGrid extends Component {
                 this.onFilterChanged(filterObj);
               }}
             />}
-          {rowIndex === 0 &&
+          {/* Filter indicator */}
+          {rowIsHeader &&
             column.filterable &&
             <a
               className={classNames('grid-filter-indicator', {
@@ -603,7 +642,12 @@ class DataGrid extends Component {
     const { paged, currentPage } = this.props;
 
     return (
-      <div className="grid-container">
+      <div
+        className="grid-container"
+        ref={container => {
+          this.container = container;
+        }}
+      >
         <div className="grid-content">
           <AutoSizer
             {...this.props.gridProps}

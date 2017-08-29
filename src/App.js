@@ -70,15 +70,17 @@ class PageExample extends Component {
     super();
     this.state = {
       currentPage: 1,
-      filter: {}
+      filter: {},
+      sort: {}
     };
 
     this.pageSize = 10;
   }
 
   getRows(filtered) {
+    const sorted = DataGrid.sortRows(filtered, columns2, this.state.sort);
     return _.first(
-      _.rest(filtered, (this.state.currentPage - 1) * this.pageSize),
+      _.rest(sorted, (this.state.currentPage - 1) * this.pageSize),
       this.pageSize
     );
   }
@@ -113,7 +115,7 @@ class PageExample extends Component {
             currentPage={this.state.currentPage}
             // called with the props that have changed requiring a refresh
             // because of this, we need to check for existance and update our state accordingly
-            onUpdateDataNeeded={({ page, filter }) => {
+            onUpdateDataNeeded={({ page, filter, sort }) => {
               const updateObj = {};
               if (page) {
                 updateObj.currentPage = page;
@@ -121,8 +123,11 @@ class PageExample extends Component {
 
               if (filter) {
                 updateObj.filter = filter;
+                updateObj.currentPage = 1;
+              }
 
-                // this will need to happen for sort too
+              if (sort) {
+                updateObj.sort = sort;
                 updateObj.currentPage = 1;
               }
 
