@@ -60,8 +60,8 @@ const columns2 = [
   {
     name: 'Col 3',
     key: 'col3',
-    type: 'date',
-    formatter: event => moment(event.col3).format('M/D hh:mm')
+    type: 'dateTime'
+    // formatter: event => moment(event.col3).format('M/D hh:mm')
   }
 ];
 

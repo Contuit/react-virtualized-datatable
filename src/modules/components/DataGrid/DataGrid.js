@@ -48,8 +48,13 @@ class DataGrid extends Component {
   static _formatDateWithString(date, string) {
     const toParse = isNaN(date) ? date : Number(date);
     let tryFormat;
+    console.log(date);
     if (typeof toParse === 'number') {
-      tryFormat = moment.unix(toParse).format(string);
+      tryFormat =
+        // hacky way to check if millisecond timestamp or seconds
+        toParse > 99999999999
+          ? moment(toParse).format(string)
+          : moment.unix(toParse).format(string);
     } else {
       tryFormat = moment(toParse).format(string);
     }
