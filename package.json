@@ -1,6 +1,6 @@
 {
   "name": "react-virtualized-datatable",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "main": "lib/index.js",
   "eslintConfig": {
     "extends": "react-app"
