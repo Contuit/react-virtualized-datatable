@@ -1,6 +1,5 @@
 import _ from 'underscore';
 import React, { Component } from 'react';
-import moment from 'moment';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'font-awesome/css/font-awesome.css';
 import DataGrid from './modules/components/DataGrid/DataGrid';
@@ -110,6 +109,7 @@ class PageExample extends Component {
             items={rows}
             columns={columns2}
             totalItemCount={filtered.length}
+            measureAll
             paged
             pageSize={this.pageSize}
             currentPage={this.state.currentPage}

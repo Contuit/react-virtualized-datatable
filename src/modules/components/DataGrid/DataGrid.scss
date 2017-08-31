@@ -192,7 +192,7 @@ $break-large: 1200px;
   background-color: $content-background;
   box-shadow: -1px 3px 3px $text-subtle-color;
   font-size: 18px;
-  height: 100%;
+  height: calc(100% - 45px);
   opacity: 1;
   position: absolute;
   right: 0;

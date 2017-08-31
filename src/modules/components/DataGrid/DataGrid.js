@@ -48,7 +48,7 @@ class DataGrid extends Component {
   static _formatDateWithString(date, string) {
     const toParse = isNaN(date) ? date : Number(date);
     let tryFormat;
-    console.log(date);
+
     if (typeof toParse === 'number') {
       tryFormat =
         // hacky way to check if millisecond timestamp or seconds
@@ -110,11 +110,15 @@ class DataGrid extends Component {
   constructor(props) {
     super(props);
 
-    this.cellSizeCache = new CellMeasurerCache({
-      fixedWidth: true,
-      defaultHeight: 45
-      // minHeight: browser.lessThan.small ? 40 : 50,
-    });
+    const measureOptions = props.measureAll
+      ? { defaultHeight: 45, defaultWidth: 300 }
+      : {
+          fixedWidth: true,
+          defaultHeight: 45
+          // minHeight: browser.lessThan.small ? 40 : 50,
+        };
+
+    this.cellSizeCache = new CellMeasurerCache(measureOptions);
 
     this.state = {
       focusCol: null,
@@ -189,6 +193,8 @@ class DataGrid extends Component {
       this.needsRefresh = true;
       if (!this.mainGrid) return;
       console.log('invalidating');
+      this.cellSizeCache._rowCount = 0;
+      this.cellSizeCache._columnCount = 0;
       this.mainGrid.invalidateCellSizeAfterRender();
     }
   }
@@ -221,11 +227,14 @@ class DataGrid extends Component {
   }
 
   _refreshGridSize() {
+    console.log('refreshing?');
     if (!this.mainGrid) {
       return;
     }
+    console.log('refreshing!');
     this.cellSizeCache.clearAll();
     this.mainGrid.measureAllCells();
+    // this.mainGrid.invalidateCellSizeAfterRender();
     this.mainGrid.forceUpdateGrids();
   }
 
@@ -321,8 +330,12 @@ class DataGrid extends Component {
 
   // For now, sizing columns based on the type
   getColumnWidth(index) {
-    const { columns, columnWidthMultiplier } = this.props;
+    const { columns, columnWidthMultiplier, measureAll } = this.props;
     const { type, width } = columns[index.index];
+
+    if (measureAll) {
+      return this.cellSizeCache.columnWidth(index) + 15;
+    }
 
     let newWidth = columnWidthMultiplier * 200;
     if (typeof width === 'number') {
@@ -518,8 +531,9 @@ class DataGrid extends Component {
   }
 
   renderCell({ columnIndex, rowIndex, style, parent }) {
-    if (rowIndex === 1 && columnIndex === 0) {
-      // console.trace();
+    if (rowIndex === 1 && columnIndex === 1) {
+      console.log('rendering {1,1}');
+      console.log(style);
     }
     const { onRowClicked } = this.props;
     const data = this.getRows(rowIndex);
@@ -535,6 +549,13 @@ class DataGrid extends Component {
     const filter = this.state.filters[column.key];
 
     const rowIsHeader = rowIndex === 0;
+    const cellStyles = {
+      ...style
+    };
+
+    if (rowIsHeader) {
+      cellStyles.minHeight = 45;
+    }
 
     return (
       <CellMeasurer
@@ -548,12 +569,7 @@ class DataGrid extends Component {
         }}
       >
         <div
-          style={{
-            ...style,
-            minHeight: 45,
-            maxWidth: 1000,
-            width: this.getColumnWidth({ index: columnIndex })
-          }}
+          style={cellStyles}
           className={classNames({
             'grid-cell': !rowIsHeader,
             'grid-header-cell': rowIsHeader,
@@ -724,6 +740,8 @@ DataGrid.propTypes = {
   columnWidthMultiplier: PropTypes.number,
   fixedColumns: PropTypes.number,
 
+  measureAll: PropTypes.bool,
+
   // paging props follow
   paged: PropTypes.bool,
   pageSize: PropTypes.number,
@@ -741,6 +759,7 @@ DataGrid.defaultProps = {
   onPageChange: () => {},
   onScroll: () => {},
   onRowClicked: () => {},
+  measureAll: false,
 
   // paging props follow
   paged: false,
