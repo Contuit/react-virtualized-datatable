@@ -192,7 +192,6 @@ class DataGrid extends Component {
     if (!_.isEqual(nextProps.items, this.props.items)) {
       this.needsRefresh = true;
       if (!this.mainGrid) return;
-      console.log('invalidating');
       this.cellSizeCache._rowCount = 0;
       this.cellSizeCache._columnCount = 0;
       this.mainGrid.invalidateCellSizeAfterRender();
@@ -227,11 +226,10 @@ class DataGrid extends Component {
   }
 
   _refreshGridSize() {
-    console.log('refreshing?');
     if (!this.mainGrid) {
       return;
     }
-    console.log('refreshing!');
+
     this.cellSizeCache.clearAll();
     this.mainGrid.measureAllCells();
     // this.mainGrid.invalidateCellSizeAfterRender();
@@ -531,10 +529,6 @@ class DataGrid extends Component {
   }
 
   renderCell({ columnIndex, rowIndex, style, parent }) {
-    if (rowIndex === 1 && columnIndex === 1) {
-      console.log('rendering {1,1}');
-      console.log(style);
-    }
     const { onRowClicked } = this.props;
     const data = this.getRows(rowIndex);
 
