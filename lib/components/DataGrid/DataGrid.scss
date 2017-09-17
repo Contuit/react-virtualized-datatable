@@ -1,4 +1,4 @@
-$animation-timing: .3s;
+$animation-timing: 0.3s;
 $text-color: #000;
 $text-subtle-color: #8c8c8c;
 $accent-color: #2ecc71;
@@ -7,8 +7,8 @@ $accent-text-active: #0a6ebd;
 $content-background: #fcfcfc;
 $background-color: #f2f2f2;
 
-$table-alt-row-color: rgba($accent-color, .1);
-$table-hover-row-color: rgba($accent-color, .3);
+$table-alt-row-color: rgba($accent-color, 0.1);
+$table-hover-row-color: rgba($accent-color, 0.3);
 
 // breakpoints
 $break-x-x-small: 380px;
@@ -82,9 +82,10 @@ $break-large: 1200px;
 }
 
 .grid-cell-data {
-  overflow: hidden;
+  max-height: 250px;
+  max-width: 500px;
+  overflow: auto;
   padding: 0 10px;
-  text-overflow: ellipsis;
   transition: font $animation-timing ease;
 
   .btn {
@@ -101,6 +102,10 @@ $break-large: 1200px;
 
   .user-thumbnail-wrapper {
     padding-bottom: 0;
+  }
+
+  p {
+    margin-bottom: 0;
   }
 }
 
