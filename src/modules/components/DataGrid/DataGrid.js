@@ -487,6 +487,7 @@ class DataGrid extends Component {
         noRowsRenderer={DataGrid.emptyRenderer}
         width={width}
         onScroll={this.onGridScroll}
+        enableFixedColumnScroll
         className={classNames('data-grid', {
           'scrolled-left': this.state.scrolledAllLeft
         })}
@@ -657,8 +658,7 @@ class DataGrid extends Component {
 
   render() {
     const { paged, currentPage } = this.props;
-
-    console.log(`Needs refresh: ${this.needsRefresh}`);
+    const filter = this.state.filters;
 
     return (
       <div
@@ -672,6 +672,7 @@ class DataGrid extends Component {
             {...this.props.gridProps}
             needsRefresh={this.needsRefresh}
             currentPage={currentPage}
+            filter={filter}
           >
             {this.renderMultiGrid}
           </AutoSizer>
