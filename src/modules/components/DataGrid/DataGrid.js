@@ -298,19 +298,26 @@ class DataGrid extends Component {
   getRows(index = -1) {
     const { items, paged } = this.props;
 
-    if (!items || !items.length) {
-      return [];
-    }
-
-    // if we have a paged table, we don't need to do the filtering or sorting internally
-    const filtered = paged ? items : this._filterRows(items);
-    const sorted = paged ? filtered : this._sortRows(filtered);
-
     // get the name of each column into an array
     const colNames = {};
     this.getColumns().forEach(col => {
       colNames[col.key] = col.name;
     });
+
+    if (!items || !items.length) {
+      const emptyRow = {};
+      _.each(colNames, (value, key) => {
+        emptyRow[key] = ' ';
+      });
+
+      const tempDataSet = [colNames, emptyRow];
+
+      return index < 0 ? tempDataSet : tempDataSet[index];
+    }
+
+    // if we have a paged table, we don't need to do the filtering or sorting internally
+    const filtered = paged ? items : this._filterRows(items);
+    const sorted = paged ? filtered : this._sortRows(filtered);
 
     // put the header as column one, and the rest after
     const dataSet = [colNames, ...sorted];
@@ -462,9 +469,9 @@ class DataGrid extends Component {
     const colCount = this.getColumnCount();
     const rowCount = this.getRowCount();
 
-    if (rowCount < 2) {
-      return DataGrid.emptyRenderer();
-    }
+    // if (rowCount < 2) {
+    //   return DataGrid.emptyRenderer();
+    // }
 
     return (
       <MultiGrid
@@ -650,6 +657,8 @@ class DataGrid extends Component {
 
   render() {
     const { paged, currentPage } = this.props;
+
+    console.log(`Needs refresh: ${this.needsRefresh}`);
 
     return (
       <div

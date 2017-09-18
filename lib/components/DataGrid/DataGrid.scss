@@ -84,6 +84,7 @@ $break-large: 1200px;
 .grid-cell-data {
   max-height: 250px;
   max-width: 500px;
+  min-width: 100px;
   overflow: auto;
   padding: 0 10px;
   transition: font $animation-timing ease;
@@ -102,10 +103,6 @@ $break-large: 1200px;
 
   .user-thumbnail-wrapper {
     padding-bottom: 0;
-  }
-
-  p {
-    margin-bottom: 0;
   }
 }
 
