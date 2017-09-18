@@ -136,6 +136,11 @@ class DataGrid extends Component {
     this.getColumnWidth = this.getColumnWidth.bind(this);
     this.getRowHeight = this.getRowHeight.bind(this);
     this.onFilterChanged = this.onFilterChanged.bind(this);
+
+    // throttle filter changing, ignore leading edge
+    this.callDataUpdate = _.throttle(this.callDataUpdate.bind(this), 750, {
+      leading: false
+    });
   }
 
   componentDidMount() {
@@ -243,6 +248,10 @@ class DataGrid extends Component {
     return false;
   }
 
+  callDataUpdate(options) {
+    this.props.onUpdateDataNeeded(options);
+  }
+
   onFilterChanged(filterObj) {
     const newFilters = {
       ...this.state.filters,
@@ -253,7 +262,7 @@ class DataGrid extends Component {
       // if this is a paged table, we need to notify that the filter has changed so the data can be
       // refreshed
       if (this.props.paged) {
-        this.props.onUpdateDataNeeded({ filter: newFilters });
+        this.callDataUpdate({ filter: newFilters });
       }
 
       if (!this.props.paged) {
@@ -714,6 +723,8 @@ class DataGrid extends Component {
             bsSize="sm"
             items={Math.ceil(1.0 * totalItemCount / pageSize)}
             activePage={currentPage}
+            maxButtons={4}
+            ellipsis
             onSelect={eventKey => {
               onUpdateDataNeeded({ page: eventKey });
             }}
