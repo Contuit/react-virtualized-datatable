@@ -340,7 +340,7 @@ class DataGrid extends Component {
     const { type, width } = columns[index.index];
 
     if (measureAll) {
-      return this.cellSizeCache.columnWidth(index) + 15;
+      return this.cellSizeCache.columnWidth(index) + 20;
     }
 
     let newWidth = columnWidthMultiplier * 200;
@@ -439,7 +439,9 @@ class DataGrid extends Component {
     }
 
     this.setState({ ...this.state, sortBy, sortDirection }, () => {
-      callback();
+      if (_.isFunction(callback)) {
+        callback();
+      }
 
       this._refreshGridSize();
     });

@@ -43,10 +43,6 @@ $break-large: 1200px;
     padding: 8px 0;
   }
 
-  &:last-child {
-    border-right: 0;
-  }
-
   .filter-input {
     background-color: transparent;
     border-color: $accent-text;
