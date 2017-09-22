@@ -122,13 +122,13 @@ class DataGrid extends Component {
 
       filters: {},
       filterOpened: false,
-      scrolledAllLeft: true
+      scrolledAllLeft: true,
+
+      needsRefresh: false
     };
 
     // stores the inputs
     this.filters = {};
-
-    this.needsRefresh = false;
 
     this.renderMultiGrid = this.renderMultiGrid.bind(this);
     this.onGridScroll = this.onGridScroll.bind(this);
@@ -137,9 +137,9 @@ class DataGrid extends Component {
     this.getRowHeight = this.getRowHeight.bind(this);
     this.onFilterChanged = this.onFilterChanged.bind(this);
 
-    // throttle filter changing, ignore leading edge
+    // throttle filter changing
     this.callDataUpdate = _.throttle(this.callDataUpdate.bind(this), 750, {
-      leading: false
+      leading: true
     });
   }
 
@@ -182,17 +182,25 @@ class DataGrid extends Component {
       this.mainGrid._leftGridWidth +
       this.mainGrid._bottomRightGrid._scrollingContainer.scrollWidth;
 
+    let newState = {};
+
     if (containerWidth === contentWidth) {
-      this.setState({ scrolledAllLeft: true, scrolledAllRight: true });
+      newState = { scrolledAllLeft: true, scrolledAllRight: true };
     }
 
-    if (!_.isEqual(nextProps.items, this.props.items)) {
-      this.needsRefresh = true;
+    if (
+      JSON.stringify(nextProps.items) !== JSON.stringify(this.props.items) ||
+      JSON.stringify(nextProps.columns) !== JSON.stringify(this.props.columns)
+    ) {
+      console.log('here??');
+      newState.needsRefresh = true;
       if (!this.mainGrid) return;
       this.cellSizeCache._rowCount = 0;
       this.cellSizeCache._columnCount = 0;
       this.mainGrid.invalidateCellSizeAfterRender();
     }
+
+    this.setState(newState);
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -216,9 +224,10 @@ class DataGrid extends Component {
       }, 200);
     }
 
-    if (this.needsRefresh) {
+    if (this.state.needsRefresh) {
+      console.log('clearing refresh');
       this._refreshGridSize();
-      this.needsRefresh = false;
+      this.setState({ needsRefresh: false });
     }
   }
 
@@ -671,6 +680,8 @@ class DataGrid extends Component {
     const { paged, currentPage } = this.props;
     const filter = this.state.filters;
 
+    console.log(this.state.needsRefresh);
+
     return (
       <div
         className="grid-container"
@@ -681,7 +692,7 @@ class DataGrid extends Component {
         <div className="grid-content">
           <AutoSizer
             {...this.props.gridProps}
-            needsRefresh={this.needsRefresh}
+            needsRefresh={this.state.needsRefresh}
             currentPage={currentPage}
             filter={filter}
           >
