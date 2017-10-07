@@ -1,14 +1,14 @@
-import _ from 'underscore';
-import moment from 'moment';
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import { Pagination } from 'react-bootstrap';
-import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
-import MultiGrid from 'react-virtualized/dist/commonjs/MultiGrid';
-import CellMeasurer from 'react-virtualized/dist/commonjs/CellMeasurer';
-import SortDirection from 'react-virtualized/dist/commonjs/Table/SortDirection';
-import CellMeasurerCache from 'react-virtualized/dist/commonjs/CellMeasurer/CellMeasurerCache';
+import _ from "underscore";
+import moment from "moment";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import classNames from "classnames";
+import { Pagination } from "react-bootstrap";
+import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
+import MultiGrid from "react-virtualized/dist/commonjs/MultiGrid";
+import CellMeasurer from "react-virtualized/dist/commonjs/CellMeasurer";
+import SortDirection from "react-virtualized/dist/commonjs/Table/SortDirection";
+import CellMeasurerCache from "react-virtualized/dist/commonjs/CellMeasurer/CellMeasurerCache";
 
 class DataGrid extends Component {
   static emptyRenderer() {
@@ -25,11 +25,11 @@ class DataGrid extends Component {
     return items.sort((a, b) => {
       const aVal = DataGrid.formatData(sortCol, a);
       const bVal = DataGrid.formatData(sortCol, b);
-      if (typeof aVal === 'undefined') {
+      if (typeof aVal === "undefined") {
         return 1;
       }
 
-      if (typeof bVal === 'undefined') {
+      if (typeof bVal === "undefined") {
         return -1;
       }
 
@@ -49,7 +49,7 @@ class DataGrid extends Component {
     const toParse = isNaN(date) ? date : Number(date);
     let tryFormat;
 
-    if (typeof toParse === 'number') {
+    if (typeof toParse === "number") {
       tryFormat =
         // hacky way to check if millisecond timestamp or seconds
         toParse > 99999999999
@@ -59,7 +59,7 @@ class DataGrid extends Component {
       tryFormat = moment(toParse).format(string);
     }
 
-    if (tryFormat === 'Invalid date') {
+    if (tryFormat === "Invalid date") {
       return date;
     }
 
@@ -72,13 +72,13 @@ class DataGrid extends Component {
     }
 
     let myData = null;
-    if (column.key.indexOf('.') > -1) {
-      const split = column.key.split('.');
+    if (column.key.indexOf(".") > -1) {
+      const split = column.key.split(".");
       if (split.length < 2) {
         return;
       }
 
-      myData = data[split[0]] ? data[split[0]][split[1]] : '';
+      myData = data[split[0]] ? data[split[0]][split[1]] : "";
     } else {
       myData = data[column.key];
     }
@@ -88,11 +88,11 @@ class DataGrid extends Component {
 
   static formatValue(value, type) {
     switch (type) {
-      case 'date':
-        return DataGrid._formatDateWithString(value, 'M/D/YYYY');
-      case 'dateTime':
-        return DataGrid._formatDateWithString(value, 'M/D/YYYY HH:mm');
-      case 'array':
+      case "date":
+        return DataGrid._formatDateWithString(value, "M/D/YYYY");
+      case "dateTime":
+        return DataGrid._formatDateWithString(value, "M/D/YYYY HH:mm");
+      case "array":
         return <ul>{value.map(item => <li key={item}>{item}</li>)}</ul>;
       default:
         return value;
@@ -117,7 +117,7 @@ class DataGrid extends Component {
       hoveredColumnIndex: null,
       hoveredRowIndex: null,
 
-      sortBy: 'name',
+      sortBy: "name",
       sortDirection: SortDirection.ASC,
 
       filters: {},
@@ -154,12 +154,12 @@ class DataGrid extends Component {
     if (defaultSort) {
       if (
         _.isString(defaultSort.sortDirection) &&
-        defaultSort.sortDirection.toLowerCase() === 'asc'
+        defaultSort.sortDirection.toLowerCase() === "asc"
       ) {
         defaultSort.sortDirection = SortDirection.ASC;
       } else if (
         _.isString(defaultSort.sortDirection) &&
-        defaultSort.sortDirection.toLowerCase() === 'desc'
+        defaultSort.sortDirection.toLowerCase() === "desc"
       ) {
         defaultSort.sortDirection = SortDirection.DESC;
       }
@@ -189,10 +189,10 @@ class DataGrid extends Component {
     }
 
     if (
-      JSON.stringify(nextProps.items) !== JSON.stringify(this.props.items) ||
-      JSON.stringify(nextProps.columns) !== JSON.stringify(this.props.columns)
+      _.isEqual(nextProps.items, this.props.items) ||
+      _.isEqual(nextProps.columns, this.props.columns)
     ) {
-      console.log('here??');
+      console.log("here??");
       newState.needsRefresh = true;
       if (!this.mainGrid) return;
       this.cellSizeCache._rowCount = 0;
@@ -225,7 +225,7 @@ class DataGrid extends Component {
     }
 
     if (this.state.needsRefresh) {
-      console.log('clearing refresh');
+      console.log("clearing refresh");
       this._refreshGridSize();
       this.setState({ needsRefresh: false });
     }
@@ -325,7 +325,7 @@ class DataGrid extends Component {
     if (!items || !items.length) {
       const emptyRow = {};
       _.each(colNames, (value, key) => {
-        emptyRow[key] = ' ';
+        emptyRow[key] = " ";
       });
 
       const tempDataSet = [colNames, emptyRow];
@@ -353,18 +353,18 @@ class DataGrid extends Component {
     }
 
     let newWidth = columnWidthMultiplier * 200;
-    if (typeof width === 'number') {
+    if (typeof width === "number") {
       newWidth = width;
     } else {
       switch (type) {
-        case 'text':
-        case 'list':
+        case "text":
+        case "list":
           newWidth = columnWidthMultiplier * 300;
           break;
-        case 'date':
+        case "date":
           newWidth = columnWidthMultiplier * 150;
           break;
-        case 'checkbox':
+        case "checkbox":
           newWidth = columnWidthMultiplier * 150;
           break;
         default:
@@ -440,11 +440,11 @@ class DataGrid extends Component {
 
   setTableSort({ sortBy, sortDirection }, callback) {
     if (!sortBy) {
-      throw new Error('setTableSort requires sortBy option');
+      throw new Error("setTableSort requires sortBy option");
     }
 
     if (!sortDirection) {
-      throw new Error('setTableSort requires sortDirection option');
+      throw new Error("setTableSort requires sortDirection option");
     }
 
     this.setState({ ...this.state, sortBy, sortDirection }, () => {
@@ -485,7 +485,7 @@ class DataGrid extends Component {
     const { fixedColumns } = this.props;
     const boxShadow = this.state.scrolledAllLeft
       ? false
-      : '1px 3px 3px #a2a2a2';
+      : "1px 3px 3px #a2a2a2";
     const colCount = this.getColumnCount();
     const rowCount = this.getRowCount();
 
@@ -508,8 +508,8 @@ class DataGrid extends Component {
         width={width}
         onScroll={this.onGridScroll}
         enableFixedColumnScroll
-        className={classNames('data-grid', {
-          'scrolled-left': this.state.scrolledAllLeft
+        className={classNames("data-grid", {
+          "scrolled-left": this.state.scrolledAllLeft
         })}
         styleBottomLeftGrid={{ boxShadow }}
         ref={grid => {
@@ -557,7 +557,7 @@ class DataGrid extends Component {
     }
 
     const column = this.getColumn(columnIndex);
-    if (!column) return '';
+    if (!column) return "";
 
     const { sortBy, sortDirection } = this.state;
     const filter = this.state.filters[column.key];
@@ -585,16 +585,16 @@ class DataGrid extends Component {
         <div
           style={cellStyles}
           className={classNames({
-            'grid-cell': !rowIsHeader,
-            'grid-header-cell': rowIsHeader,
-            'grid-header-filterable': column.filterable,
-            'grid-row-even': rowIndex % 2 === 0,
-            'first-col': columnIndex === 0,
-            'last-col': columnIndex === this.getColumnCount(),
-            'grid-cell-filter': rowIsHeader && this.state.filterOpened,
-            'grid-cell-sort': rowIsHeader && sortBy === column.key,
-            'grid-row-hovered': rowIndex === this.state.hoveredRowIndex,
-            'grid-column-hovered': columnIndex === this.state.hoveredColumnIndex
+            "grid-cell": !rowIsHeader,
+            "grid-header-cell": rowIsHeader,
+            "grid-header-filterable": column.filterable,
+            "grid-row-even": rowIndex % 2 === 0,
+            "first-col": columnIndex === 0,
+            "last-col": columnIndex === this.getColumnCount(),
+            "grid-cell-filter": rowIsHeader && this.state.filterOpened,
+            "grid-cell-sort": rowIsHeader && sortBy === column.key,
+            "grid-row-hovered": rowIndex === this.state.hoveredRowIndex,
+            "grid-column-hovered": columnIndex === this.state.hoveredColumnIndex
           })}
           onMouseOver={() => {
             this.setState(
@@ -621,9 +621,9 @@ class DataGrid extends Component {
             sortBy === column.key && (
               <span className="grid-sort-indicator">
                 <i
-                  className={classNames('fa', {
-                    'fa-sort-asc': sortDirection === SortDirection.ASC,
-                    'fa-sort-desc': sortDirection === SortDirection.DESC
+                  className={classNames("fa", {
+                    "fa-sort-asc": sortDirection === SortDirection.ASC,
+                    "fa-sort-desc": sortDirection === SortDirection.DESC
                   })}
                 />
               </span>
@@ -644,7 +644,7 @@ class DataGrid extends Component {
                 ref={input => {
                   this.filters[column.key] = input;
                 }}
-                value={filter && filter.value ? filter.value : ''}
+                value={filter && filter.value ? filter.value : ""}
                 onChange={e => {
                   const filterObj = {
                     key: column.key,
@@ -659,7 +659,7 @@ class DataGrid extends Component {
           {rowIsHeader &&
             column.filterable && (
               <a
-                className={classNames('grid-filter-indicator', {
+                className={classNames("grid-filter-indicator", {
                   active: filter && filter.value
                 })}
                 tabIndex={columnIndex}
@@ -701,7 +701,7 @@ class DataGrid extends Component {
         </div>
         {paged && this._renderFooter()}
         <div
-          className={classNames('scroll-x-indicator', {
+          className={classNames("scroll-x-indicator", {
             faded: this.state.scrolledAllRight
           })}
         >
@@ -728,7 +728,7 @@ class DataGrid extends Component {
         <div className="paginator">
           <div className="paginator-label">
             <em>
-              Showing {(currentPage - 1) * pageSize + 1} - {showing} of{' '}
+              Showing {(currentPage - 1) * pageSize + 1} - {showing} of{" "}
               {totalItemCount}
             </em>
           </div>
@@ -774,7 +774,7 @@ DataGrid.propTypes = {
 };
 
 DataGrid.defaultProps = {
-  title: '',
+  title: "",
   fixedColumns: 1,
   defaultSort: null,
   columnWidthMultiplier: 1,
