@@ -168,7 +168,7 @@ class DataGrid extends Component {
     }
 
     setTimeout(() => {
-      this._refreshGridSize();
+      this.setState({ needsRefresh: true });
     }, 1);
   }
 
@@ -189,15 +189,13 @@ class DataGrid extends Component {
     }
 
     if (
-      _.isEqual(nextProps.items, this.props.items) ||
-      _.isEqual(nextProps.columns, this.props.columns)
+      this.mainGrid &&
+      (!_.isEqual(nextProps.items, this.props.items) ||
+        !_.isEqual(nextProps.columns, this.props.columns))
     ) {
-      console.log("here??");
-      newState.needsRefresh = true;
-      if (!this.mainGrid) return;
       this.cellSizeCache._rowCount = 0;
       this.cellSizeCache._columnCount = 0;
-      this.mainGrid.invalidateCellSizeAfterRender();
+      this._refreshGridSize();
     }
 
     this.setState(newState);
@@ -471,7 +469,8 @@ class DataGrid extends Component {
       updateObj.scrolledAllLeft = scrolledAllLeft;
     }
 
-    if (updateObj !== {}) {
+    if (!_.isEqual(updateObj, {})) {
+      console.log(updateObj);
       this.setState(updateObj, () => {
         if (!this.mainGrid) return;
         this.mainGrid.forceUpdateGrids();
