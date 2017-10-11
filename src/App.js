@@ -1489,7 +1489,7 @@ class PageExample extends Component {
       sort: {}
     };
 
-    this.pageSize = 10;
+    this.pageSize = 5;
   }
 
   getRows(filtered) {

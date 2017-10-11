@@ -191,7 +191,10 @@ class DataGrid extends Component {
     if (
       this.mainGrid &&
       (!_.isEqual(nextProps.items, this.props.items) ||
-        !_.isEqual(nextProps.columns, this.props.columns))
+        !_.isEqual(
+          _.map(nextProps.columns, c => ({ name: c.name, key: c.key })),
+          _.map(this.props.columns, c => ({ name: c.name, key: c.key }))
+        ))
     ) {
       this.cellSizeCache._rowCount = 0;
       this.cellSizeCache._columnCount = 0;
