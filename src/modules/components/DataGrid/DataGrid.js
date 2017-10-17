@@ -409,9 +409,25 @@ class DataGrid extends Component {
         return;
       }
 
-      const checkAgainst = DataGrid.formatData(filterCol, item);
+      let checkAgainst = DataGrid.formatData(filterCol, item);
 
       if (!checkAgainst) {
+        result.keep = false;
+        return;
+      }
+
+      let depth = 0;
+      while (
+        !_.isFunction(checkAgainst.toLowerCase) &&
+        checkAgainst.props &&
+        checkAgainst.props.children &&
+        depth < 5
+      ) {
+        checkAgainst = checkAgainst.props.children;
+        depth++;
+      }
+
+      if (!_.isFunction(checkAgainst.toLowerCase)) {
         result.keep = false;
         return;
       }
@@ -697,6 +713,7 @@ class DataGrid extends Component {
           <AutoSizer
             {...this.props.gridProps}
             needsRefresh={this.state.needsRefresh}
+            rowCount={rowCount}
             currentPage={currentPage}
             filter={filter}
           >
