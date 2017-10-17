@@ -491,6 +491,7 @@ class DataGrid extends Component {
       : "1px 3px 3px #a2a2a2";
     const colCount = this.getColumnCount();
     const rowCount = this.getRowCount();
+    console.log(rowCount);
 
     // if (rowCount < 2) {
     //   return DataGrid.emptyRenderer();
@@ -682,8 +683,8 @@ class DataGrid extends Component {
   render() {
     const { paged, currentPage } = this.props;
     const filter = this.state.filters;
-
-    console.log(this.state.needsRefresh);
+    const rowCount = this.getRowCount();
+    console.log(`Render row count: ${rowCount}`);
 
     return (
       <div
