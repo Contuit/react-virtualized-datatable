@@ -199,6 +199,7 @@ class DataGrid extends Component {
       this.cellSizeCache._rowCount = 0;
       this.cellSizeCache._columnCount = 0;
       this._refreshGridSize();
+      this.mainGrid.invalidateCellSizeAfterRender();
     }
 
     this.setState(newState);
