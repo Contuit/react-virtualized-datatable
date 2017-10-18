@@ -700,7 +700,7 @@ class DataGrid extends Component {
     const { paged, currentPage } = this.props;
     const filter = this.state.filters;
     const rowCount = this.getRowCount();
-    console.log(`Render row count: ${rowCount}`);
+    const colCount = this.getColumnCount();
 
     return (
       <div
@@ -714,6 +714,7 @@ class DataGrid extends Component {
             {...this.props.gridProps}
             needsRefresh={this.state.needsRefresh}
             rowCount={rowCount}
+            colCount={colCount}
             currentPage={currentPage}
             filter={filter}
           >
