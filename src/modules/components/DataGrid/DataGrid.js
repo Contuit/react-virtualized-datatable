@@ -702,7 +702,7 @@ class DataGrid extends Component {
     const rowCount = this.getRowCount();
     const colCount = this.getColumnCount();
     const rows = this.getRows();
-    const cols = this.getColumns();
+    const cols = this.getColumns().map(c => ({ key: c.key, name: c.name }));
 
     console.log(rows);
     console.log(cols);
