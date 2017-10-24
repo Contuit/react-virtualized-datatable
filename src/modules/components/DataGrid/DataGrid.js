@@ -715,6 +715,8 @@ class DataGrid extends Component {
             needsRefresh={this.state.needsRefresh}
             rowCount={rowCount}
             colCount={colCount}
+            items={this.getRows()}
+            columns={this.getColumns()}
             currentPage={currentPage}
             filter={filter}
           >
