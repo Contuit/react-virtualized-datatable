@@ -701,6 +701,11 @@ class DataGrid extends Component {
     const filter = this.state.filters;
     const rowCount = this.getRowCount();
     const colCount = this.getColumnCount();
+    const rows = this.getRows();
+    const cols = this.getColumns();
+
+    console.log(rows);
+    console.log(cols);
 
     return (
       <div
@@ -715,8 +720,8 @@ class DataGrid extends Component {
             needsRefresh={this.state.needsRefresh}
             rowCount={rowCount}
             colCount={colCount}
-            items={this.getRows()}
-            columns={this.getColumns()}
+            items={rows}
+            columns={cols}
             currentPage={currentPage}
             filter={filter}
           >
