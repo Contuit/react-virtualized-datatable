@@ -701,11 +701,11 @@ class DataGrid extends Component {
     const filter = this.state.filters;
     const rowCount = this.getRowCount();
     const colCount = this.getColumnCount();
-    const rows = this.getRows();
-    const cols = this.getColumns().map(c => ({ key: c.key, name: c.name }));
+    // const rows = this.getRows();
+    // const cols = this.getColumns().map(c => ({ key: c.key, name: c.name }));
 
-    console.log(rows);
-    console.log(cols);
+    // console.log(JSON.stringify(rows));
+    // console.log(cols);
 
     return (
       <div
@@ -720,8 +720,8 @@ class DataGrid extends Component {
             needsRefresh={this.state.needsRefresh}
             rowCount={rowCount}
             colCount={colCount}
-            items={rows}
-            columns={cols}
+            /* items={JSON.stringify(rows)}
+            columns={cols} */
             currentPage={currentPage}
             filter={filter}
           >
