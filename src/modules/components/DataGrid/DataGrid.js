@@ -228,7 +228,6 @@ class DataGrid extends Component {
 
     if (this.state.needsRefresh) {
       console.log("clearing refresh");
-      this.mainGrid.invalidateCellSizeAfterRender();
       this._refreshGridSize();
       this.setState({ needsRefresh: false });
     }
@@ -392,7 +391,7 @@ class DataGrid extends Component {
   }
 
   getRowHeight(index) {
-    return this.cellSizeCache.rowHeight(index);
+    return this.cellSizeCache.rowHeight(index) + 10;
   }
 
   _filterRows(items) {
