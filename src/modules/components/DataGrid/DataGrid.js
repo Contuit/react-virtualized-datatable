@@ -228,6 +228,7 @@ class DataGrid extends Component {
 
     if (this.state.needsRefresh) {
       console.log("clearing refresh");
+      this.mainGrid.invalidateCellSizeAfterRender();
       this._refreshGridSize();
       this.setState({ needsRefresh: false });
     }
