@@ -348,7 +348,6 @@ class DataGrid extends Component {
   // For now, sizing columns based on the type
   getColumnWidth(index) {
     const { columns, columnWidthMultiplier, measureAll } = this.props;
-    console.log(columns, index);
     const { type, width } = columns[index.index];
 
     if (measureAll) {
