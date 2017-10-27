@@ -348,6 +348,7 @@ class DataGrid extends Component {
   // For now, sizing columns based on the type
   getColumnWidth(index) {
     const { columns, columnWidthMultiplier, measureAll } = this.props;
+    console.log(columns, index);
     const { type, width } = columns[index.index];
 
     if (measureAll) {
@@ -391,7 +392,7 @@ class DataGrid extends Component {
   }
 
   getRowHeight(index) {
-    return this.cellSizeCache.rowHeight(index) + 10;
+    return this.cellSizeCache.rowHeight(index);
   }
 
   _filterRows(items) {
@@ -584,7 +585,8 @@ class DataGrid extends Component {
 
     const rowIsHeader = rowIndex === 0;
     const cellStyles = {
-      ...style
+      ...style,
+      width: this.getColumnWidth({ index: columnIndex })
     };
 
     if (rowIsHeader) {
