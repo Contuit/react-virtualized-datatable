@@ -1,6 +1,6 @@
 {
   "name": "react-virtualized-datatable",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "main": "lib/index.js",
   "eslintConfig": {
     "extends": "react-app"
@@ -59,7 +59,7 @@
     "classnames": "^2.2.5",
     "eslint-config-airbnb": "^15.1.0",
     "font-awesome": "4.7.0",
-    "moment": "^2.18.1",
+    "moment": "2.17.1",
     "react-virtualized": "9.9.0",
     "underscore": "^1.8.3",
     "react": "15.5.4",
