@@ -3,7 +3,7 @@ import moment from "moment";
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import { Pagination } from "react-bootstrap";
+import Pagination from "react-bootstrap/lib/Pagination";
 import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
 import MultiGrid from "react-virtualized/dist/commonjs/MultiGrid";
 import CellMeasurer from "react-virtualized/dist/commonjs/CellMeasurer";
@@ -93,7 +93,13 @@ class DataGrid extends Component {
       case "dateTime":
         return DataGrid._formatDateWithString(value, "M/D/YYYY HH:mm");
       case "array":
-        return <ul>{value.map(item => <li key={item}>{item}</li>)}</ul>;
+        return (
+          <ul>
+            {value.map(item => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        );
       default:
         return value;
     }
@@ -638,60 +644,57 @@ class DataGrid extends Component {
             }
           }}
         >
-          {rowIsHeader &&
-            sortBy === column.key && (
-              <span className="grid-sort-indicator">
-                <i
-                  className={classNames("fa", {
-                    "fa-sort-asc": sortDirection === SortDirection.ASC,
-                    "fa-sort-desc": sortDirection === SortDirection.DESC
-                  })}
-                />
-              </span>
-            )}
+          {rowIsHeader && sortBy === column.key && (
+            <span className="grid-sort-indicator">
+              <i
+                className={classNames("fa", {
+                  "fa-sort-asc": sortDirection === SortDirection.ASC,
+                  "fa-sort-desc": sortDirection === SortDirection.DESC
+                })}
+              />
+            </span>
+          )}
           <div className="grid-cell-data">
             {rowIsHeader ? data[column.key] : DataGrid.formatData(column, data)}
           </div>
           {/* Filter input */}
-          {rowIsHeader &&
-            column.filterable && (
-              <input
-                type="text"
-                className="filter-input"
-                onClick={e => {
-                  // when we click on the input we need to prevent sorting
-                  e.stopPropagation();
-                }}
-                ref={input => {
-                  this.filters[column.key] = input;
-                }}
-                value={filter && filter.value ? filter.value : ""}
-                onChange={e => {
-                  const filterObj = {
-                    key: column.key,
-                    value: e.target.value
-                  };
+          {rowIsHeader && column.filterable && (
+            <input
+              type="text"
+              className="filter-input"
+              onClick={e => {
+                // when we click on the input we need to prevent sorting
+                e.stopPropagation();
+              }}
+              ref={input => {
+                this.filters[column.key] = input;
+              }}
+              value={filter && filter.value ? filter.value : ""}
+              onChange={e => {
+                const filterObj = {
+                  key: column.key,
+                  value: e.target.value
+                };
 
-                  this.onFilterChanged(filterObj);
-                }}
-              />
-            )}
+                this.onFilterChanged(filterObj);
+              }}
+            />
+          )}
           {/* Filter indicator */}
-          {rowIsHeader &&
-            column.filterable && (
-              <a
-                className={classNames("grid-filter-indicator", {
-                  active: filter && filter.value
-                })}
-                tabIndex={columnIndex}
-                onClick={e => {
-                  e.stopPropagation();
-                  this.onFilterClicked(column.key);
-                }}
-              >
-                <i className="fa fa-filter fa-fw" />
-              </a>
-            )}
+          {rowIsHeader && column.filterable && (
+            <a
+              className={classNames("grid-filter-indicator", {
+                active: filter && filter.value
+              })}
+              tabIndex={columnIndex}
+              onClick={e => {
+                e.stopPropagation();
+                this.onFilterClicked(column.key);
+              }}
+            >
+              <i className="fa fa-filter fa-fw" />
+            </a>
+          )}
         </div>
       </CellMeasurer>
     );
@@ -764,7 +767,7 @@ class DataGrid extends Component {
           </div>
           <Pagination
             bsSize="sm"
-            items={Math.ceil(1.0 * totalItemCount / pageSize)}
+            items={Math.ceil((1.0 * totalItemCount) / pageSize)}
             activePage={currentPage}
             maxButtons={4}
             ellipsis
