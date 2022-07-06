@@ -64,7 +64,7 @@
     "bootstrap": "3.3.7",
     "classnames": "^2.2.5",
     "font-awesome": "4.7.0",
-    "moment": "^2.22.2",
+    "moment": "^2.29.4",
     "react": "15.5.4",
     "react-bootstrap": "0.31.3",
     "react-dom": "15.5.4",
